@@ -1,0 +1,39 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Car Data Visualization</title>
+    <link rel="stylesheet" href="styles.css">
+    <!-- D3.js Library -->
+    <script src="https://d3js.org/d3.v7.min.js"></script>
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1>Car Cost Visualization</h1>
+            <p>Use the range slider below to filter cars by cost</p>
+        </header>
+
+        <div class="controls">
+            <div class="range-container">
+                <div class="range-labels">
+                    <span class="min-value">Min: $<span id="min-value-label">0</span></span>
+                    <span class="max-value">Max: $<span id="max-value-label">0</span></span>
+                </div>
+                <div id="cost-range"></div>
+            </div>
+        </div>
+
+        <div class="visualization">
+            <div id="scatter-plot"></div>
+        </div>
+
+        <div class="car-cards" id="car-cards">
+            <!-- Car cards will be dynamically generated here -->
+        </div>
+    </div>
+
+    <script src="script.js"></script>
+</body>
+</html>
