@@ -35,22 +35,27 @@ const yAxisGroup = g.append("g")
 
 // Wait for the DOM to be fully loaded
 document.addEventListener('DOMContentLoaded', function() {
-    // Car data (embedded to avoid CORS issues when loading from file)
-    const carData = [
-        { "make": "Toyota", "cost": 22000 },
-        { "make": "Honda", "cost": 21000 },
-        { "make": "Ford", "cost": 25000 },
-        { "make": "Chevrolet", "cost": 24000 },
-        { "make": "BMW", "cost": 35000 },
-        { "make": "Mercedes-Benz", "cost": 40000 },
-        { "make": "Volkswagen", "cost": 23000 },
-        { "make": "Hyundai", "cost": 20000 },
-        { "make": "Kia", "cost": 19500 },
-        { "make": "Nissan", "cost": 20500 }
-    ];
+    // // Car data (embedded to avoid CORS issues when loading from file)
+    // const carData = [
+    //     { "make": "Toyota", "cost": 22000 },
+    //     { "make": "Honda", "cost": 21000 },
+    //     { "make": "Ford", "cost": 25000 },
+    //     { "make": "Chevrolet", "cost": 24000 },
+    //     { "make": "BMW", "cost": 35000 },
+    //     { "make": "Mercedes-Benz", "cost": 40000 },
+    //     { "make": "Volkswagen", "cost": 23000 },
+    //     { "make": "Hyundai", "cost": 20000 },
+    //     { "make": "Kia", "cost": 19500 },
+    //     { "make": "Nissan", "cost": 20500 }
+    // ];
     
+    // // Initialize the visualization
+    // initVisualization(carData);
+
+    d3.json('data/data.json').then(function(carData) {
     // Initialize the visualization
     initVisualization(carData);
+});
 });
 
 function initVisualization(data) {
