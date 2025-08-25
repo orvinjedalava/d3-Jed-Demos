@@ -111,24 +111,42 @@ header h1 {
 /* Scatter Plot Styles */
 .visualization {
     margin-bottom: 20px;
+    height: 100%;
 }
 
 #scatter-plot {
     width: 100%;
-    height: 300px;
+    height: 600px;
     margin-bottom: 0;
     overflow: visible;
+    position: relative;
 }
 
-.dot {
-    stroke: #fff;
-    stroke-width: 1px;
+/* SVG Card Styles */
+.card-rect {
+    rx: 5;
+    ry: 5;
+    stroke-width: 1;
     transition: all 0.3s ease;
 }
 
-.dot:hover {
-    stroke-width: 2px;
+.card-group {
     cursor: pointer;
+}
+
+.card-text {
+    text-anchor: middle;
+    font-family: Arial, sans-serif;
+    font-size: 10px;
+    fill: #2c3e50;
+}
+
+.card-price {
+    text-anchor: middle;
+    font-family: Arial, sans-serif;
+    font-size: 10px;
+    font-weight: bold;
+    fill: #2980b9;
 }
 
 /* Car Cards Styles */

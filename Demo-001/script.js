@@ -152,11 +152,8 @@ function updateVisualization(data, minCost, maxCost) {
     // Filter data based on the cost range
     const filteredData = data.filter(d => d.cost >= minCost && d.cost <= maxCost);
     
-    // Update the scatter plot
+    // Update the scatter plot with cards
     updateScatterPlot(filteredData);
-    
-    // Update the car cards
-    updateCarCards(filteredData);
 }
 
 function updateScatterPlot(data) {
@@ -166,7 +163,7 @@ function updateScatterPlot(data) {
     // Set dimensions for the scatter plot
     const margin = {top: 20, right: 20, bottom: 40, left: 50};
     const width = document.getElementById('scatter-plot').clientWidth - margin.left - margin.right;
-    const height = 300 - margin.top - margin.bottom;
+    const height = 500 - margin.top - margin.bottom;
     
     // Create SVG for the scatter plot
     const svg = d3.select('#scatter-plot')
@@ -213,49 +210,66 @@ function updateScatterPlot(data) {
         .style('text-anchor', 'middle')
         .text('Cost ($)');
     
-    // Create dots for the scatter plot
-    svg.selectAll('.dot')
-        .data(data)
-        .enter()
-        .append('circle')
-        .attr('class', 'dot')
-        .attr('cx', d => x(d.make) + x.bandwidth() / 2)
-        .attr('cy', d => y(d.cost))
-        .attr('r', 8)
-        .style('fill', (d, i) => d3.schemeCategory10[i % 10])
-        .on('mouseover', function(event, d) {
-            d3.select(this)
-                .transition()
-                .duration(200)
-                .attr('r', 12);
-        })
-        .on('mouseout', function() {
-            d3.select(this)
-                .transition()
-                .duration(200)
-                .attr('r', 8);
-        });
-}
-
-function updateCarCards(data) {
-    // Clear previous cards
-    const carCardsContainer = document.getElementById('car-cards');
-    carCardsContainer.innerHTML = '';
+    // Define card dimensions
+    const cardWidth = 80;
+    const cardHeight = 100;
+    const imageHeight = 60;
     
-    // Create a card for each car
-    data.forEach(car => {
-        const card = document.createElement('div');
-        card.className = 'car-card';
+    // Create cards for each car data point as SVG elements
+    data.forEach((car, i) => {
+        // Calculate position based on the scales
+        const xPos = x(car.make) + x.bandwidth() / 2 - cardWidth / 2;
+        const yPos = y(car.cost) - cardHeight / 2;
         
-        // Use the BMW image for all cars as specified
-        card.innerHTML = `
-            <img src="images/BMW.jpg" alt="${car.make}">
-            <div class="car-info">
-                <h3>${car.make}</h3>
-                <p class="cost">$${car.cost.toLocaleString()}</p>
-            </div>
-        `;
+        // Create a group for the card
+        const cardGroup = svg.append('g')
+            .attr('class', 'card-group')
+            .attr('transform', `translate(${xPos}, ${yPos})`)
+            .on('mouseover', function() {
+                d3.select(this)
+                    .raise() // Bring to front
+                    .transition()
+                    .duration(300)
+                    .attr('transform', `translate(${xPos}, ${yPos}) scale(1.15)`);
+            })
+            .on('mouseout', function() {
+                d3.select(this)
+                    .transition()
+                    .duration(300)
+                    .attr('transform', `translate(${xPos}, ${yPos})`);
+            });
         
-        carCardsContainer.appendChild(card);
+        // Create card background
+        cardGroup.append('rect')
+            .attr('class', 'card-rect')
+            .attr('width', cardWidth)
+            .attr('height', cardHeight)
+            .attr('fill', d3.schemeCategory10[i % 10] + '20') // Light version of the color
+            .attr('stroke', d3.schemeCategory10[i % 10]);
+        
+        // Add the image using SVG image element
+        cardGroup.append('image')
+            .attr('href', 'images/BMW.jpg')
+            .attr('x', 0)
+            .attr('y', 0)
+            .attr('width', cardWidth)
+            .attr('height', imageHeight)
+            .attr('preserveAspectRatio', 'xMidYMid slice');
+        
+        // Add car make text
+        cardGroup.append('text')
+            .attr('class', 'card-text')
+            .attr('x', cardWidth / 2)
+            .attr('y', imageHeight + 15)
+            .text(car.make);
+        
+        // Add car price text
+        cardGroup.append('text')
+            .attr('class', 'card-price')
+            .attr('x', cardWidth / 2)
+            .attr('y', imageHeight + 30)
+            .text(`$${car.cost.toLocaleString()}`);
     });
 }
+
+// Function removed as car cards are now integrated into the scatter plot
