@@ -1,3 +1,38 @@
+// Set dimensions for the scatter plot
+const margin = {top: 20, right: 20, bottom: 70, left: 50};
+const width = document.getElementById('scatter-plot').clientWidth - margin.left - margin.right;
+const height = 600 - margin.top - margin.bottom;
+
+// Define card dimensions
+const cardWidth = 80;
+const cardHeight = 100;
+const imageHeight = 60;
+
+// Create SVG for the scatter plot
+const svg = d3.select('#scatter-plot')
+    .append('svg')
+    .attr('width', width + margin.left + margin.right)
+    .attr('height', height + margin.top + margin.bottom);
+
+const g = svg.append('g')
+    .attr('transform', `translate(${margin.left},${margin.top})`);
+
+// Create scales
+const x = d3.scaleBand()
+    .range([0, width])
+    .padding(0.1);
+
+const y = d3.scaleLinear()
+    .range([height, 0]);
+
+const xAxisGroup = g.append("g")
+  .attr("class", "x axis")
+  .attr("transform", `translate(0, ${height})`);
+
+const yAxisGroup = g.append("g")
+  .attr("class", "y axis");
+
+
 // Wait for the DOM to be fully loaded
 document.addEventListener('DOMContentLoaded', function() {
     // Car data (embedded to avoid CORS issues when loading from file)
@@ -157,119 +192,300 @@ function updateVisualization(data, minCost, maxCost) {
 }
 
 function updateScatterPlot(data) {
-    // Clear previous plot
-    d3.select('#scatter-plot').html('');
-    
-    // Set dimensions for the scatter plot
-    const margin = {top: 20, right: 20, bottom: 40, left: 50};
-    const width = document.getElementById('scatter-plot').clientWidth - margin.left - margin.right;
-    const height = 500 - margin.top - margin.bottom;
-    
-    // Create SVG for the scatter plot
-    const svg = d3.select('#scatter-plot')
-        .append('svg')
-        .attr('width', width + margin.left + margin.right)
-        .attr('height', height + margin.top + margin.bottom)
-        .append('g')
-        .attr('transform', `translate(${margin.left},${margin.top})`);
-    
+    console.log(data);
+
+    const t = d3.transition().duration(750);
+
     // Create scales
-    const x = d3.scaleBand()
-        .domain(data.map(d => d.make))
-        .range([0, width])
-        .padding(0.1);
-    
-    const y = d3.scaleLinear()
-        .domain([0, d3.max(data, d => d.cost) * 1.1])
-        .range([height, 0]);
-    
-    // Create axes
-    svg.append('g')
-        .attr('transform', `translate(0,${height})`)
-        .call(d3.axisBottom(x))
-        .selectAll('text')
-        .style('text-anchor', 'end')
-        .attr('dx', '-.8em')
-        .attr('dy', '.15em')
-        .attr('transform', 'rotate(-45)');
-    
-    svg.append('g')
-        .call(d3.axisLeft(y).tickFormat(d => `$${d.toLocaleString()}`));
-    
-    // Add axis labels
-    svg.append('text')
-        .attr('transform', `translate(${width/2}, ${height + margin.bottom - 5})`)
-        .style('text-anchor', 'middle')
-        .text('Car Make');
-    
-    svg.append('text')
-        .attr('transform', 'rotate(-90)')
-        .attr('y', 0 - margin.left)
-        .attr('x', 0 - (height / 2))
-        .attr('dy', '1em')
-        .style('text-anchor', 'middle')
-        .text('Cost ($)');
-    
-    // Define card dimensions
-    const cardWidth = 80;
-    const cardHeight = 100;
-    const imageHeight = 60;
-    
+    x.domain(data.map(d => d.make));
+    y.domain([0, d3.max(data, d => d.cost) * 1.1]);
+
+    const xAxisCall = d3.axisBottom(x)
+    xAxisGroup.transition(t).call(xAxisCall)
+        .selectAll("text")
+            .attr("y", "10")
+            .attr("x", "-5")
+            .attr("text-anchor", "end")
+            .attr("transform", "rotate(-40)");
+
+    const yAxisCall = d3.axisLeft(y)
+        .tickFormat(d => `$${d.toLocaleString()}`);
+    yAxisGroup.transition(t).call(yAxisCall)
+
     // Create cards for each car data point as SVG elements
-    data.forEach((car, i) => {
-        // Calculate position based on the scales
-        const xPos = x(car.make) + x.bandwidth() / 2 - cardWidth / 2;
-        const yPos = y(car.cost) - cardHeight / 2;
-        
-        // Create a group for the card
-        const cardGroup = svg.append('g')
-            .attr('class', 'card-group')
-            .attr('transform', `translate(${xPos}, ${yPos})`)
-            .on('mouseover', function() {
-                d3.select(this)
-                    .raise() // Bring to front
-                    .transition()
-                    .duration(300)
-                    .attr('transform', `translate(${xPos}, ${yPos}) scale(1.15)`);
-            })
-            .on('mouseout', function() {
-                d3.select(this)
-                    .transition()
-                    .duration(300)
-                    .attr('transform', `translate(${xPos}, ${yPos})`);
-            });
-        
-        // Create card background
-        cardGroup.append('rect')
-            .attr('class', 'card-rect')
-            .attr('width', cardWidth)
-            .attr('height', cardHeight)
-            .attr('fill', d3.schemeCategory10[i % 10] + '20') // Light version of the color
-            .attr('stroke', d3.schemeCategory10[i % 10]);
-        
-        // Add the image using SVG image element
-        cardGroup.append('image')
-            .attr('href', 'images/BMW.jpg')
-            .attr('x', 0)
-            .attr('y', 0)
-            .attr('width', cardWidth)
-            .attr('height', imageHeight)
-            .attr('preserveAspectRatio', 'xMidYMid slice');
-        
-        // Add car make text
-        cardGroup.append('text')
-            .attr('class', 'card-text')
-            .attr('x', cardWidth / 2)
-            .attr('y', imageHeight + 15)
-            .text(car.make);
-        
-        // Add car price text
-        cardGroup.append('text')
-            .attr('class', 'card-price')
-            .attr('x', cardWidth / 2)
-            .attr('y', imageHeight + 30)
-            .text(`$${car.cost.toLocaleString()}`);
-    });
+    const cardGroup = g.selectAll('.card-group').data(data, d => d.make);
+
+    // Handle elements that need to be removed
+    cardGroup.exit().transition(t).style('opacity', 0).remove();
+
+    // Update existing elements' positions
+    cardGroup.transition(t)
+        .attr('transform', (d) => {
+            const xPos = x(d.make) + x.bandwidth() / 2 - cardWidth / 2;
+            const yPos = y(d.cost) - cardHeight / 2;
+            return `translate(${xPos}, ${yPos})`;
+        })
+        .style('opacity', 1);
+
+    // Handle new elements - append both the group and the rect to new elements only
+    const enterSelection = cardGroup.enter().append('g')
+        .attr('class', 'card-group')
+        .attr('transform', (d) => {
+            const xPos = x(d.make) + x.bandwidth() / 2 - cardWidth / 2;
+            const yPos = y(d.cost) - cardHeight / 2;
+            return `translate(${xPos}, ${yPos})`;
+        })
+        .style('opacity', 0);
+
+    // Create card background
+    enterSelection.append('rect')
+        .attr('class', 'card-rect')
+        .attr('width', cardWidth)
+        .attr('height', cardHeight)
+        .attr('fill', (d, i) => d3.schemeCategory10[i % 10] + '20') // Light version of the color
+        .attr('stroke', (d, i) => d3.schemeCategory10[i % 10]);
+
+    // Add the image using SVG image element
+    enterSelection.append('image')
+        .attr('href', 'images/BMW.jpg')
+        .attr('x', 0)
+        .attr('y', 0)
+        .attr('width', cardWidth)
+        .attr('height', imageHeight)
+        .attr('preserveAspectRatio', 'xMidYMid slice');
+
+    // Add car make text
+    enterSelection.append('text')
+        .attr('class', 'card-text')
+        .attr('x', cardWidth / 2)
+        .attr('y', imageHeight + 15)
+        .text((d) => d.make);
+    
+    // Add car price text
+    enterSelection.append('text')
+        .attr('class', 'card-price')
+        .attr('x', cardWidth / 2)
+        .attr('y', imageHeight + 30)
+        .text((d) => `$${d.cost.toLocaleString()}`);
+
+    // Now apply the transition
+    enterSelection.transition(t)
+        .style('opacity', 1);
 }
+
+// function updateScatterPlot(data) {
+//     const t = d3.transition().duration(750);
+    
+//     // Create scales
+//     const x = d3.scaleBand()
+//         .domain(data.map(d => d.make))
+//         .range([0, width])
+//         .padding(0.1);
+    
+//     const y = d3.scaleLinear()
+//         .domain([0, d3.max(data, d => d.cost) * 1.1])
+//         .range([height, 0]);
+    
+//     // Create axes
+//     svg.append('g')
+//         .attr('transform', `translate(0,${height})`)
+//         .call(d3.axisBottom(x))
+//         .selectAll('text')
+//         .style('text-anchor', 'end')
+//         .attr('dx', '-.8em')
+//         .attr('dy', '.15em')
+//         .attr('transform', 'rotate(-45)');
+    
+//     svg.append('g')
+//         .call(d3.axisLeft(y).tickFormat(d => `$${d.toLocaleString()}`));
+    
+//     // Add axis labels
+//     svg.append('text')
+//         .attr('transform', `translate(${width/2}, ${height + margin.bottom - 5})`)
+//         .style('text-anchor', 'middle')
+//         .text('Car Make');
+    
+//     svg.append('text')
+//         .attr('transform', 'rotate(-90)')
+//         .attr('y', 0 - margin.left)
+//         .attr('x', 0 - (height / 2))
+//         .attr('dy', '1em')
+//         .style('text-anchor', 'middle')
+//         .text('Cost ($)');
+    
+//     // Create cards for each car data point as SVG elements
+//     // Calculate position based on the scales
+//     const xPos = x(car.make) + x.bandwidth() / 2 - cardWidth / 2;
+//     const yPos = y(car.cost) - cardHeight / 2;
+
+//     const cardGroup = g.selectAll('.card-group').data(data, d => d.make);
+
+//     cardGroup.exit()
+//         .transition(t)
+//         .style('opacity', 0)
+//         .remove();
+
+//     cardGroup.enter().append('g')
+//         .attr('class', 'card-group')
+//         .attr('transform', `translate(${xPos}, ${yPos})`)
+//         .on('mouseover', function() {
+//             d3.select(this)
+//                 .raise() // Bring to front
+//                 .transition(t)
+//                 .attr('transform', `translate(${xPos}, ${yPos}) scale(1.15)`);
+//         })
+//         .on('mouseout', function() {
+//             d3.select(this)
+//                 .transition(t)
+//                 .attr('transform', `translate(${xPos}, ${yPos})`);
+//         });
+    
+//     // Create card background
+//     cardGroup.append('rect')
+//         .attr('class', 'card-rect')
+//         .attr('width', cardWidth)
+//         .attr('height', cardHeight)
+//         .attr('fill', (d, i) => d3.schemeCategory10[i % 10] + '20') // Light version of the color
+//         .attr('stroke', (d, i) => d3.schemeCategory10[i % 10]);
+    
+//     // Add the image using SVG image element
+//     cardGroup.append('image')
+//         .attr('href', 'images/BMW.jpg')
+//         .attr('x', 0)
+//         .attr('y', 0)
+//         .attr('width', cardWidth)
+//         .attr('height', imageHeight)
+//         .attr('preserveAspectRatio', 'xMidYMid slice');
+    
+//     // Add car make text
+//     cardGroup.append('text')
+//         .attr('class', 'card-text')
+//         .attr('x', cardWidth / 2)
+//         .attr('y', imageHeight + 15)
+//         .text(car.make);
+    
+//     // Add car price text
+//     cardGroup.append('text')
+//         .attr('class', 'card-price')
+//         .attr('x', cardWidth / 2)
+//         .attr('y', imageHeight + 30)
+//         .text(`$${car.cost.toLocaleString()}`);
+// }
+
+// function updateScatterPlot(data) {
+//     // Clear previous plot
+//     d3.select('#scatter-plot').html('');
+    
+//     // Set dimensions for the scatter plot
+//     const margin = {top: 20, right: 20, bottom: 40, left: 50};
+//     const width = document.getElementById('scatter-plot').clientWidth - margin.left - margin.right;
+//     const height = 500 - margin.top - margin.bottom;
+    
+//     // Create SVG for the scatter plot
+//     const svg = d3.select('#scatter-plot')
+//         .append('svg')
+//         .attr('width', width + margin.left + margin.right)
+//         .attr('height', height + margin.top + margin.bottom)
+//         .append('g')
+//         .attr('transform', `translate(${margin.left},${margin.top})`);
+    
+//     // Create scales
+//     const x = d3.scaleBand()
+//         .domain(data.map(d => d.make))
+//         .range([0, width])
+//         .padding(0.1);
+    
+//     const y = d3.scaleLinear()
+//         .domain([0, d3.max(data, d => d.cost) * 1.1])
+//         .range([height, 0]);
+    
+//     // Create axes
+//     svg.append('g')
+//         .attr('transform', `translate(0,${height})`)
+//         .call(d3.axisBottom(x))
+//         .selectAll('text')
+//         .style('text-anchor', 'end')
+//         .attr('dx', '-.8em')
+//         .attr('dy', '.15em')
+//         .attr('transform', 'rotate(-45)');
+    
+//     svg.append('g')
+//         .call(d3.axisLeft(y).tickFormat(d => `$${d.toLocaleString()}`));
+    
+//     // Add axis labels
+//     svg.append('text')
+//         .attr('transform', `translate(${width/2}, ${height + margin.bottom - 5})`)
+//         .style('text-anchor', 'middle')
+//         .text('Car Make');
+    
+//     svg.append('text')
+//         .attr('transform', 'rotate(-90)')
+//         .attr('y', 0 - margin.left)
+//         .attr('x', 0 - (height / 2))
+//         .attr('dy', '1em')
+//         .style('text-anchor', 'middle')
+//         .text('Cost ($)');
+    
+//     // Define card dimensions
+//     const cardWidth = 80;
+//     const cardHeight = 100;
+//     const imageHeight = 60;
+    
+//     // Create cards for each car data point as SVG elements
+//     data.forEach((car, i) => {
+//         // Calculate position based on the scales
+//         const xPos = x(car.make) + x.bandwidth() / 2 - cardWidth / 2;
+//         const yPos = y(car.cost) - cardHeight / 2;
+        
+//         // Create a group for the card
+//         const cardGroup = svg.append('g')
+//             .attr('class', 'card-group')
+//             .attr('transform', `translate(${xPos}, ${yPos})`)
+//             .on('mouseover', function() {
+//                 d3.select(this)
+//                     .raise() // Bring to front
+//                     .transition()
+//                     .duration(300)
+//                     .attr('transform', `translate(${xPos}, ${yPos}) scale(1.15)`);
+//             })
+//             .on('mouseout', function() {
+//                 d3.select(this)
+//                     .transition()
+//                     .duration(300)
+//                     .attr('transform', `translate(${xPos}, ${yPos})`);
+//             });
+        
+//         // Create card background
+//         cardGroup.append('rect')
+//             .attr('class', 'card-rect')
+//             .attr('width', cardWidth)
+//             .attr('height', cardHeight)
+//             .attr('fill', d3.schemeCategory10[i % 10] + '20') // Light version of the color
+//             .attr('stroke', d3.schemeCategory10[i % 10]);
+        
+//         // Add the image using SVG image element
+//         cardGroup.append('image')
+//             .attr('href', 'images/BMW.jpg')
+//             .attr('x', 0)
+//             .attr('y', 0)
+//             .attr('width', cardWidth)
+//             .attr('height', imageHeight)
+//             .attr('preserveAspectRatio', 'xMidYMid slice');
+        
+//         // Add car make text
+//         cardGroup.append('text')
+//             .attr('class', 'card-text')
+//             .attr('x', cardWidth / 2)
+//             .attr('y', imageHeight + 15)
+//             .text(car.make);
+        
+//         // Add car price text
+//         cardGroup.append('text')
+//             .attr('class', 'card-price')
+//             .attr('x', cardWidth / 2)
+//             .attr('y', imageHeight + 30)
+//             .text(`$${car.cost.toLocaleString()}`);
+//     });
+// }
 
 // Function removed as car cards are now integrated into the scatter plot
