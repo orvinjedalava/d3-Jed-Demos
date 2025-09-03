@@ -1,0 +1,44 @@
+<!doctype html>
+<html>
+<head>
+    <script src="https://d3js.org/d3.v5.min.js"></script>
+</head>   
+<body>
+    <script>
+        var quantizeData = [100, 15, 26, 39, 51, 57, 63, 79, 82, 99];
+        var quantileData = [100, 220, 2650, 39689, 51485, 576892, 633402, 7965320, 8269467, 99568235];
+        var thresholdData = [-67, 2, 9, 125, 550, 6200, 9853, 13678, 5862303, 96587983];
+        //[0, 20], [21-40], [41-60], [61-80], [81-100]
+        var outputRange = ["red", "green", "deeppink", "blue", "yellow"];
+        var quantizeScale = d3.scaleQuantize()
+                                .domain([0, 100])  
+                                .range(outputRange);
+        var quantileScale = d3.scaleQuantile()
+                                .domain(quantileData)
+                                .range(outputRange);
+        var thresholdScale = d3.scaleThreshold()
+                                .domain([0, 10, 1000, 100000, 10000000])
+                                .range(outputRange);
+        var svg = d3.select("body").append("svg")
+                    .attr("width", 500).attr("height", 200).style("background", "pink");
+        var circles = svg.selectAll("circle");
+        circles.data(quantizeData).enter().append("circle")
+                .attr("r", 20)
+                .attr("cx", function(d,i){return (i+1)*45;})
+                .attr("cy", 40)
+                .style("fill", function(d){return quantizeScale(d);});
+        
+        circles.data(quantileData).enter().append("circle")
+                .attr("r", 20)
+                .attr("cx", function(d,i){return (i+1)*45;})
+                .attr("cy", 100)
+                .style("fill", function(d){return quantileScale(d);});
+        
+        circles.data(thresholdData).enter().append("circle")
+                .attr("r", 20)
+                .attr("cx", function(d,i){return (i+1)*45;})
+                .attr("cy", 160)
+                .style("fill", function(d){return thresholdScale(d);});
+    </script>
+</body>
+</html>
