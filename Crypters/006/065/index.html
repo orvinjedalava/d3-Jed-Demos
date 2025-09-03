@@ -1,0 +1,24 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <title>D3 - Axes</title>
+    <script src="https://d3js.org/d3.v5.min.js"></script>    
+  </head>
+  <body>
+      <script>
+          var svg = d3.select("body").append("svg").attr("width", 500)
+                    .attr("height", 500).style("background", "pink");
+        
+        var xScale = d3.scaleLinear()
+                                .domain([0,100])
+                                .range([0,480]);
+          var yScale = d3.scaleLinear()
+                                .domain([0,100])
+                                .range([480,0]);
+        var xAxis = d3.axisBottom(xScale);
+        var yAxis = d3.axisLeft().scale(yScale);
+         svg.append("g").attr("transform","translate(10,480)").call(xAxis); 
+          svg.append("g").attr("transform","translate(25,10)").call(yAxis); 
+      </script>
+  </body>
+</html>

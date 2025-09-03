@@ -1,0 +1,42 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <title>D3 - Axes</title>
+    <script src="https://d3js.org/d3.v5.min.js"></script>
+      <style>
+        g path, g line
+          {
+              stroke:deeppink;
+              stroke-width:2px;
+          }
+          g text
+          {
+              stroke:deeppink;
+              font-size: 12px;
+          }
+      </style>
+  </head>
+  <body>
+      <script>
+          var width = 500, height = 500, spacing = 60;
+        var xScale = d3.scaleLinear()
+                                .domain([0,100])
+                                .range([0,width-spacing]);
+        var xAxis = d3.axisBottom(xScale)
+                        //.ticks(5)
+                        .tickValues([0, 10, 50, 75,  100])
+                        //.tickSizeOuter(15)
+                        //.tickSizeInner(5)
+                        .tickSize(8)
+                        .tickFormat(function(d){return d + "%";})
+                        .tickPadding(10);
+      
+        var svg = d3.select("body").append("svg")
+                    .attr("width", width).attr("height", height)
+                    .style("background", "pink")
+                    .append("g")
+                    .attr("transform", "translate(" + spacing/2 + "," + spacing/2 + ")");
+         svg.append("g").attr("transform","translate(0," + (height-spacing) + ")").call(xAxis); 
+      </script>
+  </body>
+</html>
