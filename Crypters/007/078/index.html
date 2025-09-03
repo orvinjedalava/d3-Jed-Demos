@@ -1,0 +1,38 @@
+<!DOCTYPE html>
+<html>
+  <head>  
+    <title>Line Genarator</title>
+    <script src="https://d3js.org/d3.v5.min.js"></script>  
+      <style>
+        path
+          {
+              fill:none;
+              stroke:deeppink;
+              stroke-width:5;
+          }
+      </style>
+  </head>
+  <body>
+        <script>
+            var points = [ /*[0, 20], [100, 250], [260, 90], [450, 40], [450, 140]*/
+            [100, 300], [250, 50], [400, 300], [100, 150], [400, 150], [100, 300]];
+            var data = [/*{x:100, y:100}, {x:130, y:260}, {x:300, y:460}, {x:500, y:250}*/
+            {point:100}, {point:150}, {point:80}, {point:220}, {point:130}];
+            var width = 600, height = 500;
+            var svg = d3.select("body").append("svg")
+                        .attr("width", width).attr("height", height)
+                        .style("background", "pink");
+            /* var line = d3.line();
+            svg.append("path").attr("d", line(points)); */
+            
+            /*var line = d3.line()
+                            .x(function(d){return d.x;})
+                            .y(function(d){return d.y;});*/
+            var line = d3.line()
+                        .x(function(d){return d.point})
+                        .y(function(d,i){return (i+1)*50;})
+                        .curve(d3.curveBundle);
+            svg.append("path").attr("d", line(data));
+        </script>
+  </body>
+</html>

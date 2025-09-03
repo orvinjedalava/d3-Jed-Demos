@@ -1,0 +1,25 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <title>Arc Generator</title>
+    <script src="https://d3js.org/d3.v5.min.js"></script>
+  </head>
+  <body>    
+    <script>
+        var width = 700, height = 600, fullAngle = 2 * Math.PI;
+        var svg = d3.select("body").append("svg")
+                    .attr("width", width).attr("height", height)
+                    .style("background", "pink");
+        var circle = d3.arc()
+                        .innerRadius(80)
+                        .outerRadius(100)
+                        .startAngle(0)
+                        .endAngle(fullAngle);
+        var halfCircle = d3.arc()({innerRadius:70, outerRadius:100, startAngle:0, endAngle:fullAngle/4});
+                             
+        svg.append("g").attr("transform", "translate(200, 200)").append("path").attr("d", circle).attr("fill", "deeppink"); 
+        
+        svg.append("g").attr("transform", "translate(400, 200)").append("path").attr("d", halfCircle).attr("fill", "indigo");    
+    </script>
+  </body>
+</html>
