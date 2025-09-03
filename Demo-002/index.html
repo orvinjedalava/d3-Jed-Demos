@@ -2,47 +2,124 @@
 <html>
   <head>
     <title>Zooming Interaction</title>
-    <script src="https://d3js.org/d3.v5.min.js"></script>
+    <script src="https://d3js.org/d3.v7.min.js"></script>
+    <style>
+      body {
+        margin: 0;
+        overflow: hidden;
+      }
+      .selected {
+        stroke: #ff0000;
+        stroke-width: 2px;
+      }
+    </style>
   </head>
   <body>
      <script>       
-        var width = 900, height= 600, radius = 10;   
-      
-        function decidePositions(num)
-        {
-            var arr = [];
-            for(var i=0;i<num;i++)
-                {
-                    arr.push({
-                        x:Math.random()*width - radius,
-                        y:Math.random()*height - radius                     
-                    })
-                }
+        // Define dimensions and parameters
+        const width = 900, height = 600, radius = 10;
+        let isZoomed = false; // Track zoom state
+        let activeCircle = null; // Track which circle is active
+        
+        // Function to generate random positions for circles
+        function decidePositions(num) {
+            const arr = [];
+            for (let i = 0; i < num; i++) {
+                arr.push({
+                    x: Math.random() * (width - 2 * radius) + radius,
+                    y: Math.random() * (height - 2 * radius) + radius                     
+                });
+            }
             return arr;
-        }  
-        var svg = d3.select("body").append("svg")
-                     .attr("width", width).attr("height", height)
+        }
+        
+        // Create SVG and container group
+        const svg = d3.select("body").append("svg")
+                     .attr("width", width)
+                     .attr("height", height)
                      .style("background", "pink");
-        var gContainer = svg.append("g");
-        var zoom = d3.zoom().scaleExtent([1,10]).on("zoom", zoomed);
-         
-        var positions = decidePositions(50);
-        var colors = d3.scaleOrdinal(d3.schemeDark2);
-        var circles = gContainer.selectAll("circle").data(positions);
-         
-        circles.enter().append("circle")
-            .attr("r", radius)
-            .attr("cx", function(d){return d.x;}).attr("cy", function(d){return d.y;}).attr("fill", function(d,i){return colors(i);});
-         
-         var rectangle = svg.append("rect").attr("fill", "none")
-                            .attr("width", width).attr("height", height)
-                            .attr("pointer-events", "all")
-                            .call(zoom);
-         
-        function zoomed()
-         {
-            gContainer.attr("transform", d3.event.transform);
-         }
+        
+        // Create a background rect to catch "click outside" events
+        const background = svg.append("rect")
+                     .attr("width", width)
+                     .attr("height", height)
+                     .attr("fill", "none")
+                     .attr("pointer-events", "all");
+        
+        // Create container group for all circles
+        const gContainer = svg.append("g");
+        
+        // Generate positions and set up color scale
+        const positions = decidePositions(50);
+        const colors = d3.scaleOrdinal(d3.schemeDark2);
+        
+        // Create circles
+        const circles = gContainer.selectAll("circle")
+                     .data(positions)
+                     .enter()
+                     .append("circle")
+                     .attr("r", radius)
+                     .attr("cx", d => d.x)
+                     .attr("cy", d => d.y)
+                     .attr("fill", (d, i) => colors(i));
+        
+        // Define zoom behavior
+        const zoom = d3.zoom()
+                     .scaleExtent([1, 40])
+                     .on("zoom", (event) => {
+                         gContainer.attr("transform", event.transform);
+                     });
+        
+        // Apply zoom behavior to SVG
+        svg.call(zoom);
+        
+        // Store the initial transform for resetting
+        const initialTransform = d3.zoomIdentity;
+        
+        // Handle circle click - zoom in
+        circles.on("click", function(event, d) {
+            event.stopPropagation(); // Prevent triggering background click
+            
+            // Remove previous selection styling
+            if (activeCircle) {
+                d3.select(activeCircle).classed("selected", false);
+            }
+            
+            // Add selection styling to clicked circle
+            d3.select(this).classed("selected", true);
+            activeCircle = this;
+            
+            // Calculate the transform needed to center and zoom on this circle
+            const scale = Math.min(8, 0.9 / (radius / Math.min(width, height)));
+            const translateX = width / 2 - scale * d.x;
+            const translateY = height / 2 - scale * d.y;
+            const transform = d3.zoomIdentity.translate(translateX, translateY).scale(scale);
+            
+            // Animate the zoom using interpolateZoom
+            svg.transition()
+               .duration(750)
+               .call(zoom.transform, transform);
+            
+            isZoomed = true;
+        });
+        
+        // Handle background click - zoom out
+        background.on("click", function() {
+            if (isZoomed) {
+                // Remove selection styling
+                if (activeCircle) {
+                    d3.select(activeCircle).classed("selected", false);
+                    activeCircle = null;
+                }
+                
+                // Animate back to the initial view
+                svg.transition()
+                   .duration(750)
+                   .call(zoom.transform, initialTransform);
+                
+                isZoomed = false;
+            }
+        });
      </script>
   </body>
 </html>
