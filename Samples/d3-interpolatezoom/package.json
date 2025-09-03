@@ -1,0 +1,14 @@
+{
+  "name": "@d3/d3-interpolatezoom",
+  "main": "a49bd168a8b5e662@760.js",
+  "version": "760.0.0",
+  "homepage": "https://observablehq.com/@d3/d3-interpolatezoom",
+  "author": {
+    "name": "D3",
+    "url": "https://observablehq.com/@d3"
+  },
+  "type": "module",
+  "peerDependencies": {
+    "@observablehq/runtime": "4 - 5"
+  }
+}
