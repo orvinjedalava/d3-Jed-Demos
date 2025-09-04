@@ -36,7 +36,7 @@ const g = svg.append('g');
 //     .range([0, width])
 //     .padding(0.1);
   
-const x = d3.scaleBand()
+const x = d3.scaleLinear()
     .range([0, width]);
 
 // const y = d3.scaleLinear()
@@ -47,12 +47,12 @@ const y = d3.scaleLinear()
     .range([0, height]);
 
 // Situate x-axis on the lower-left corner.
-const xAxisGroup = g.append("g")
-  .attr("class", "x axis")
-  .attr("transform", `translate(0, ${height})`);
+// const xAxisGroup = g.append("g")
+//   .attr("class", "x axis")
+//   .attr("transform", `translate(0, ${height})`);
 
-const yAxisGroup = g.append("g")
-  .attr("class", "y axis");
+// const yAxisGroup = g.append("g")
+//   .attr("class", "y axis");
 
 
 // Wait for the DOM to be fully loaded
@@ -74,143 +74,157 @@ document.addEventListener('DOMContentLoaded', function() {
     // // Initialize the visualization
     // initVisualization(carData);
 
-    d3.json('data/data.json').then(function(carData) {
-    // Initialize the visualization
-    initVisualization(carData);
-});
-});
+    // d3.json('data/data.json').then(function(carData) {
+    //     // Initialize the visualization
+    //     initVisualization(carData);
+    // });
 
-function initVisualization(data) {
-    // Find min and max cost values for the range slider
-    const minCost = d3.min(data, d => d.cost);
-    const maxCost = d3.max(data, d => d.cost);
-    
-    // Set initial range values
-    let currentMinCost = minCost;
-    let currentMaxCost = maxCost;
-    
-    // Update the min-max labels
-    document.getElementById('min-value-label').textContent = minCost.toLocaleString();
-    document.getElementById('max-value-label').textContent = maxCost.toLocaleString();
-    
-    // Create the range slider
-    createRangeSlider(minCost, maxCost, (min, max) => {
-        currentMinCost = min;
-        currentMaxCost = max;
-        
-        // Update the labels
-        document.getElementById('min-value-label').textContent = min.toLocaleString();
-        document.getElementById('max-value-label').textContent = max.toLocaleString();
-        
-        // Filter and update visualization
-        updateVisualization(data, min, max);
+    d3.json('data/circles.json').then(function(carData) {
+        // Initialize the visualization
+        // initVisualization(carData);
+        updateVisualization(carData);
     });
-    
-    // Initial visualization with all data
-    updateVisualization(data, minCost, maxCost);
-}
+});
 
-function createRangeSlider(min, max, callback) {
-    // Set dimensions for the slider
-    const margin = {top: 10, right: 25, bottom: 10, left: 25};
-    const width = document.getElementById('cost-range').clientWidth - margin.left - margin.right;
-    const height = 50 - margin.top - margin.bottom;
+// function initVisualization(data) {
+//     // Find min and max cost values for the range slider
+//     const minCost = d3.min(data, d => d.cost);
+//     const maxCost = d3.max(data, d => d.cost);
     
-    // Create SVG for the range slider
-    const svg = d3.select('#cost-range')
-        .append('svg')
-        .attr('width', width + margin.left + margin.right)
-        .attr('height', height + margin.top + margin.bottom)
-        .append('g')
-        .attr('transform', `translate(${margin.left},${margin.top})`);
+//     // Set initial range values
+//     let currentMinCost = minCost;
+//     let currentMaxCost = maxCost;
     
-    // Create the x scale
-    const x = d3.scaleLinear()
-        .domain([min, max])
-        .range([0, width])
-        .clamp(true);
+//     // Update the min-max labels
+//     document.getElementById('min-value-label').textContent = minCost.toLocaleString();
+//     document.getElementById('max-value-label').textContent = maxCost.toLocaleString();
     
-    // Create the slider track
-    svg.append('line')
-        .attr('class', 'track')
-        .attr('x1', x.range()[0])
-        .attr('x2', x.range()[1])
-        .attr('y1', height / 2)
-        .attr('y2', height / 2);
+//     // Create the range slider
+//     createRangeSlider(minCost, maxCost, (min, max) => {
+//         currentMinCost = min;
+//         currentMaxCost = max;
+        
+//         // Update the labels
+//         document.getElementById('min-value-label').textContent = min.toLocaleString();
+//         document.getElementById('max-value-label').textContent = max.toLocaleString();
+        
+//         // Filter and update visualization
+//         updateVisualization(data, min, max);
+//     });
     
-    svg.append('line')
-        .attr('class', 'track-inset')
-        .attr('x1', x.range()[0])
-        .attr('x2', x.range()[1])
-        .attr('y1', height / 2)
-        .attr('y2', height / 2);
-    
-    // Create the selected area between handles
-    const selectedArea = svg.append('rect')
-        .attr('class', 'selected-area')
-        .attr('y', (height / 2) - 5)
-        .attr('height', 10);
-    
-    // Create the track overlay for better interaction
-    const trackOverlay = svg.append('line')
-        .attr('class', 'track-overlay')
-        .attr('x1', x.range()[0])
-        .attr('x2', x.range()[1])
-        .attr('y1', height / 2)
-        .attr('y2', height / 2);
-    
-    // Create the handles
-    const handle1 = svg.append('circle')
-        .attr('class', 'handle')
-        .attr('r', 9)
-        .attr('cx', x(min))
-        .attr('cy', height / 2);
-    
-    const handle2 = svg.append('circle')
-        .attr('class', 'handle')
-        .attr('r', 9)
-        .attr('cx', x(max))
-        .attr('cy', height / 2);
-    
-    // Update the selected area
-    function updateSelectedArea() {
-        const x1 = parseFloat(handle1.attr('cx'));
-        const x2 = parseFloat(handle2.attr('cx'));
-        selectedArea
-            .attr('x', Math.min(x1, x2))
-            .attr('width', Math.abs(x2 - x1));
-    }
-    
-    // Initialize the selected area
-    updateSelectedArea();
-    
-    // Create drag behavior for handles
-    const drag = d3.drag()
-        .on('drag', function(event) {
-            const handle = d3.select(this);
-            const newX = Math.max(0, Math.min(width, event.x));
-            handle.attr('cx', newX);
-            
-            updateSelectedArea();
-            
-            // Get current values
-            const value1 = x.invert(parseFloat(handle1.attr('cx')));
-            const value2 = x.invert(parseFloat(handle2.attr('cx')));
-            
-            // Determine min and max values
-            const minValue = Math.min(value1, value2);
-            const maxValue = Math.max(value1, value2);
-            
-            // Call the callback with new values
-            callback(Math.round(minValue), Math.round(maxValue));
-        });
-    
-    // Apply drag behavior to handles
-    handle1.call(drag);
-    handle2.call(drag);
-}
+//     // Initial visualization with all data
+//     updateVisualization(data, minCost, maxCost);
+// }
 
-function updateVisualization(data, minCost, maxCost) {
+// function createRangeSlider(min, max, callback) {
+//     // Set dimensions for the slider
+//     const margin = {top: 10, right: 25, bottom: 10, left: 25};
+//     const width = document.getElementById('cost-range').clientWidth - margin.left - margin.right;
+//     const height = 50 - margin.top - margin.bottom;
+    
+//     // Create SVG for the range slider
+//     const svg = d3.select('#cost-range')
+//         .append('svg')
+//         .attr('width', width + margin.left + margin.right)
+//         .attr('height', height + margin.top + margin.bottom)
+//         .append('g')
+//         .attr('transform', `translate(${margin.left},${margin.top})`);
+    
+//     // Create the x scale
+//     const x = d3.scaleLinear()
+//         .domain([min, max])
+//         .range([0, width])
+//         .clamp(true);
+    
+//     // Create the slider track
+//     svg.append('line')
+//         .attr('class', 'track')
+//         .attr('x1', x.range()[0])
+//         .attr('x2', x.range()[1])
+//         .attr('y1', height / 2)
+//         .attr('y2', height / 2);
+    
+//     svg.append('line')
+//         .attr('class', 'track-inset')
+//         .attr('x1', x.range()[0])
+//         .attr('x2', x.range()[1])
+//         .attr('y1', height / 2)
+//         .attr('y2', height / 2);
+    
+//     // Create the selected area between handles
+//     const selectedArea = svg.append('rect')
+//         .attr('class', 'selected-area')
+//         .attr('y', (height / 2) - 5)
+//         .attr('height', 10);
+    
+//     // Create the track overlay for better interaction
+//     const trackOverlay = svg.append('line')
+//         .attr('class', 'track-overlay')
+//         .attr('x1', x.range()[0])
+//         .attr('x2', x.range()[1])
+//         .attr('y1', height / 2)
+//         .attr('y2', height / 2);
+    
+//     // Create the handles
+//     const handle1 = svg.append('circle')
+//         .attr('class', 'handle')
+//         .attr('r', 9)
+//         .attr('cx', x(min))
+//         .attr('cy', height / 2);
+    
+//     const handle2 = svg.append('circle')
+//         .attr('class', 'handle')
+//         .attr('r', 9)
+//         .attr('cx', x(max))
+//         .attr('cy', height / 2);
+    
+//     // Update the selected area
+//     function updateSelectedArea() {
+//         const x1 = parseFloat(handle1.attr('cx'));
+//         const x2 = parseFloat(handle2.attr('cx'));
+//         selectedArea
+//             .attr('x', Math.min(x1, x2))
+//             .attr('width', Math.abs(x2 - x1));
+//     }
+    
+//     // Initialize the selected area
+//     updateSelectedArea();
+    
+//     // Create drag behavior for handles
+//     const drag = d3.drag()
+//         .on('drag', function(event) {
+//             const handle = d3.select(this);
+//             const newX = Math.max(0, Math.min(width, event.x));
+//             handle.attr('cx', newX);
+            
+//             updateSelectedArea();
+            
+//             // Get current values
+//             const value1 = x.invert(parseFloat(handle1.attr('cx')));
+//             const value2 = x.invert(parseFloat(handle2.attr('cx')));
+            
+//             // Determine min and max values
+//             const minValue = Math.min(value1, value2);
+//             const maxValue = Math.max(value1, value2);
+            
+//             // Call the callback with new values
+//             callback(Math.round(minValue), Math.round(maxValue));
+//         });
+    
+//     // Apply drag behavior to handles
+//     handle1.call(drag);
+//     handle2.call(drag);
+// }
+
+// function updateVisualization(data, minCost, maxCost) {
+//     // Filter data based on the cost range
+//     const filteredData = data.filter(d => d.cost >= minCost && d.cost <= maxCost);
+    
+//     // Update the scatter plot with cards
+//     updateScatterPlot(filteredData);
+// }
+
+function updateVisualization(data) {
     // Filter data based on the cost range
     // const filteredData = data.filter(d => d.cost >= minCost && d.cost <= maxCost);
     
@@ -225,7 +239,8 @@ function updateScatterPlot(data) {
     const t = d3.transition().duration(750);
 
     // Create scales
-    x.domain(data.map(d => d.make));
+    // x.domain(data.map(d => d.make));
+    x.domain([0, 30000]);
     // y.domain([0, d3.max(data, d => d.cost) * 1.1]);
     y.domain([0, 30000]);
 
@@ -243,7 +258,7 @@ function updateScatterPlot(data) {
 
     // Create cards for each car data point as SVG elements
     // const cardGroup = g.selectAll('.card-group').data(data, d => d.make);
-    const cardGroup = g.selectAll('circle').data(data, d => d.make);
+    const cardGroup = g.selectAll('circle').data(data, d => d.name);
 
     // Handle elements that need to be removed
     cardGroup.exit().transition(t).style('opacity', 0).remove();
@@ -258,8 +273,8 @@ function updateScatterPlot(data) {
     //     .style('opacity', 1);
     cardGroup.transition(t)
         .attr("r", 30)
-        .attr("cx", d => x(d.make) + x.bandwidth() / 2)
-        .attr("cy", d => y(d.cost))
+        .attr("cx", d => x(d.cx))
+        .attr("cy", d => y(d.cy))
         .style('opacity', 1);
 
     // Handle new elements - append both the group and the rect to new elements only
@@ -295,8 +310,8 @@ function updateScatterPlot(data) {
 
     const enterSelection = cardGroup.enter().append('circle')
         .attr("r", 30)
-        .attr("cx", d => x(d.make) + x.bandwidth() / 2)
-        .attr("cy", d => y(d.cost))
+        .attr("cx", d => x(d.cx))
+        .attr("cy", d => y(d.cy))
         .attr("fill", (d, i) => "green");
     // Create card background
     // enterSelection.append('rect')

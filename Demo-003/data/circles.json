@@ -1,5 +1,5 @@
 [
   {"cx": 5000, "cy": 5000, "r": 4000, "name": "Circle A"},
   {"cx": 15000, "cy": 15000, "r": 3000, "name": "Circle B"},
-  {"cx": 25000, "cy": 10000, "r": 2000, "name": "Circle C"}
+  {"cx": 25000, "cy": 25000, "r": 2000, "name": "Circle C"}
 ]
