@@ -352,10 +352,8 @@ function updateScatterPlot(data) {
         activeCircle = this;
 
         // Calculate the transform needed to center and zoom on this circle
-        // NOTE: set scale to max of 4.
-        // the 0.9 is to leave some margin around the circle when zoomed in ( 10% )
-        console.log(0.9 / (y(d.r) / Math.min(width, height)));
-        const scale = Math.min(4, 0.9 / (y(d.r) / Math.min(width, height)));
+        // NOTE: set scale to max of 8.
+        const scale = Math.min(width, height) / (y(d.r)) * (1 - (Math.min(width, height) / Math.max(width, height)));
         const translateX = width / 2 - scale * x(d.cx);
         const translateY = height / 2 - scale * y(d.cy);
         const transform = d3.zoomIdentity.translate(translateX, translateY).scale(scale);
