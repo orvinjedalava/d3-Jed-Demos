@@ -15,7 +15,19 @@ const circleCoords = [
     { cx: 5000, cy: 5000 },
     { cx: 25000, cy: 25000 },
     { cx: 5000, cy: 25000 },
+    { cx: 25000, cy: 5000 },
+    { cx: 5000, cy: 15000 },
+    { cx: 25000, cy: 15000 },
+    { cx: 15000, cy: 5000 },
+    { cx: 15000, cy: 25000 }
 ]
+
+// level value map
+const levelValueFactos = new Map();
+levelValueFactos.set(1, 1000);
+levelValueFactos.set(2, 100);
+levelValueFactos.set(3, 10);
+
 
 // Create SVG for the scatter plot
 const svg = d3.select('#scatter-plot')
