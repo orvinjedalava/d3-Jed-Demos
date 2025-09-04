@@ -212,10 +212,11 @@ function createRangeSlider(min, max, callback) {
 
 function updateVisualization(data, minCost, maxCost) {
     // Filter data based on the cost range
-    const filteredData = data.filter(d => d.cost >= minCost && d.cost <= maxCost);
+    // const filteredData = data.filter(d => d.cost >= minCost && d.cost <= maxCost);
     
     // Update the scatter plot with cards
-    updateScatterPlot(filteredData);
+    // updateScatterPlot(filteredData);
+    updateScatterPlot(data);
 }
 
 function updateScatterPlot(data) {
@@ -225,19 +226,20 @@ function updateScatterPlot(data) {
 
     // Create scales
     x.domain(data.map(d => d.make));
-    y.domain([0, d3.max(data, d => d.cost) * 1.1]);
+    // y.domain([0, d3.max(data, d => d.cost) * 1.1]);
+    y.domain([0, 30000]);
 
-    const xAxisCall = d3.axisBottom(x)
-    xAxisGroup.transition(t).call(xAxisCall)
-        .selectAll("text")
-            .attr("y", "10")
-            .attr("x", "-5")
-            .attr("text-anchor", "end")
-            .attr("transform", "rotate(-40)");
+    // const xAxisCall = d3.axisBottom(x)
+    // xAxisGroup.transition(t).call(xAxisCall)
+    //     .selectAll("text")
+    //         .attr("y", "10")
+    //         .attr("x", "-5")
+    //         .attr("text-anchor", "end")
+    //         .attr("transform", "rotate(-40)");
 
-    const yAxisCall = d3.axisLeft(y)
-        .tickFormat(d => `$${d.toLocaleString()}`);
-    yAxisGroup.transition(t).call(yAxisCall)
+    // const yAxisCall = d3.axisLeft(y)
+    //     .tickFormat(d => `$${d.toLocaleString()}`);
+    // yAxisGroup.transition(t).call(yAxisCall)
 
     // Create cards for each car data point as SVG elements
     // const cardGroup = g.selectAll('.card-group').data(data, d => d.make);
@@ -247,12 +249,17 @@ function updateScatterPlot(data) {
     cardGroup.exit().transition(t).style('opacity', 0).remove();
 
     // Update existing elements' positions
+    // cardGroup.transition(t)
+    //     .attr('transform', (d) => {
+    //         const xPos = x(d.make) + x.bandwidth() / 2 - cardWidth / 2;
+    //         const yPos = y(d.cost) - cardHeight / 2;
+    //         return `translate(${xPos}, ${yPos})`;
+    //     })
+    //     .style('opacity', 1);
     cardGroup.transition(t)
-        .attr('transform', (d) => {
-            const xPos = x(d.make) + x.bandwidth() / 2 - cardWidth / 2;
-            const yPos = y(d.cost) - cardHeight / 2;
-            return `translate(${xPos}, ${yPos})`;
-        })
+        .attr("r", 30)
+        .attr("cx", d => x(d.make) + x.bandwidth() / 2)
+        .attr("cy", d => y(d.cost))
         .style('opacity', 1);
 
     // Handle new elements - append both the group and the rect to new elements only
