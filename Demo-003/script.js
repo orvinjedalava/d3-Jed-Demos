@@ -14,12 +14,15 @@ let isZoomed = false;
 let carData = [];
 
 // Constants for card x and y coordinates
-const leftX = widthScale /6;
-const topY = heightScale /6;
-const rightX = widthScale /6 * 5;
-const bottomY = heightScale /6 * 5;
-const midX = widthScale /6 * 3;
-const midY = heightScale /6 * 3;
+const boundingBox = { x1: 0, y1: 0, x2: widthScale, y2: heightScale };
+const boundingWidth = boundingBox.x2 - boundingBox.x1;
+const boundingHeight = boundingBox.y2 - boundingBox.y1;
+const leftX = boundingWidth / 6;
+const topY = boundingHeight / 6;
+const rightX = boundingWidth / 6 * 5;
+const bottomY = boundingHeight / 6 * 5;
+const midX = boundingWidth / 6 * 3;
+const midY = boundingHeight /6 * 3;
 
 const circleCoords = [
     { cx: midX, cy: midY },
