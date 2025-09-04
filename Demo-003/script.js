@@ -77,7 +77,21 @@ const y = d3.scaleLinear()
 document.addEventListener('DOMContentLoaded', function() {
 
     d3.json('data/circles.json').then(function(data) {
+        // Sort data by weight (ascending order)
+        data.sort((a, b) => b.weight - a.weight);
+
+        // How can I only take the top 9 items?
+        data = data.slice(0, circleCoords.length);
+
+        // Then assign positions
+        data.forEach((d, i) => {
+            d.cx = circleCoords[i % circleCoords.length].cx;
+            d.cy = circleCoords[i % circleCoords.length].cy;
+            d.r = d.weight * levelValueFactos.get(d.level);
+        });
+
         carData = data;
+        
         updateVisualization(carData);
     });
 });
