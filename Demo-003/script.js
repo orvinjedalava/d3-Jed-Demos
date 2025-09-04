@@ -90,6 +90,9 @@ document.addEventListener('DOMContentLoaded', function() {
     // Add event listener to the "Add Car" button
     document.getElementById('add-car').addEventListener('click', addCar);
 
+    // Add event listener to the "Remove Car" button
+    document.getElementById('remove-car').addEventListener('click', removeCar);
+
     // Load initial data and render visualization
     d3.json('data/circles.json').then(function(data) {
         carData = setCarData(data);
@@ -135,6 +138,23 @@ function addCar() {
         updateVisualization(carData);
     }
 }
+
+function removeCar() {
+    const carIndexInput = document.getElementById('car-index');
+    const carIndex = parseInt(carIndexInput.value);
+
+    console.log(carIndex);
+
+    if (isNaN(carIndex) || !carData[carIndex]) {
+       return;
+    }
+
+    // remove a car by index
+    carData.splice(carIndex, 1);
+    carData = setCarData(carData);
+    updateVisualization(carData);
+}
+
 
 function updateVisualization(data) {
     console.log(data);
