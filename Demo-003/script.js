@@ -12,6 +12,10 @@ const cardWidth = 80;
 const cardHeight = 100;
 const imageHeight = 60;
 
+// Define dimensions and parameters
+let activeCircle = null;
+let isZoomed = false;
+
 // Create SVG for the scatter plot
 // const svg = d3.select('#scatter-plot')
 //     .append('svg')
@@ -26,10 +30,20 @@ const svg = d3.select('#scatter-plot')
 // const g = svg.append('g')
 //     .attr('transform', `translate(${margin.left},${margin.top})`);
 
+// Create a background rect to catch "click outside" events
+const background = svg.append("rect")
+      .attr("width", width)
+      .attr("height", height)
+      .attr("fill", "none")
+      .attr("pointer-events", "all");
+
 // Create a group element for the scatter plot
 const g = svg.append('g');
 // const g = svg.append('g')
 //     .attr('transform', `translate(10,0)`);
+
+// Store the initial transform for resetting zoom back to original state
+const initialTransform = d3.zoomIdentity;
 
 // Create scales
 // const x = d3.scaleBand()
@@ -313,6 +327,20 @@ function updateScatterPlot(data) {
         .attr("cx", d => x(d.cx))
         .attr("cy", d => y(d.cy))
         .attr("fill", (d, i) => "green");
+
+    enterSelection.on('click', function(event, d) {
+        // Prevent triggering background click
+        event.stopPropagation();
+        
+        // Remove previous selection styling
+        if (activeCircle) {
+            d3.select(activeCircle).classed("selected", false);
+        }
+
+        // Add selection styling to clicked circle
+        d3.select(this).classed("selected", true);
+        activeCircle = this;
+    });
     // Create card background
     // enterSelection.append('rect')
     //     .attr('class', 'card-rect')
