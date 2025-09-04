@@ -74,11 +74,13 @@
                          // Only allow programmatic zooming
                          return !event.type.includes("wheel") && 
                                 !event.type.includes("touch") && 
-                                !event.type.includes("mouse");
+                                !event.type.includes("mouse") &&
+                                !event.type.includes("dblclick");
                      });
         
         // Apply zoom behavior to SVG
-        svg.call(zoom);        // Store the initial transform for resetting
+        svg.call(zoom)
+           .on("dblclick.zoom", null);        // Store the initial transform for resetting
         const initialTransform = d3.zoomIdentity;
         
         // Handle circle click - zoom in
