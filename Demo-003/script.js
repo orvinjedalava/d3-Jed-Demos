@@ -42,6 +42,16 @@ const g = svg.append('g');
 // const g = svg.append('g')
 //     .attr('transform', `translate(10,0)`);
 
+// Define zoom behavior
+const zoom = d3.zoom()
+    .scaleExtent([1, 40])
+    .on("zoom", (event) => {
+        g.attr("transform", event.transform);
+    });
+
+// Apply zoom behavior to SVG
+svg.call(zoom);
+
 // Store the initial transform for resetting zoom back to original state
 const initialTransform = d3.zoomIdentity;
 
@@ -286,7 +296,7 @@ function updateScatterPlot(data) {
     //     })
     //     .style('opacity', 1);
     cardGroup.transition(t)
-        .attr("r", 30)
+        .attr("r", d => y(d.r))
         .attr("cx", d => x(d.cx))
         .attr("cy", d => y(d.cy))
         .style('opacity', 1);
@@ -323,7 +333,7 @@ function updateScatterPlot(data) {
     //         });
 
     const enterSelection = cardGroup.enter().append('circle')
-        .attr("r", 30)
+        .attr("r", d => y(d.r))
         .attr("cx", d => x(d.cx))
         .attr("cy", d => y(d.cy))
         .attr("fill", (d, i) => "green");
@@ -331,7 +341,7 @@ function updateScatterPlot(data) {
     enterSelection.on('click', function(event, d) {
         // Prevent triggering background click
         event.stopPropagation();
-        
+
         // Remove previous selection styling
         if (activeCircle) {
             d3.select(activeCircle).classed("selected", false);
@@ -340,6 +350,41 @@ function updateScatterPlot(data) {
         // Add selection styling to clicked circle
         d3.select(this).classed("selected", true);
         activeCircle = this;
+
+        // Calculate the transform needed to center and zoom on this circle
+        // NOTE: set scale to max of 4.
+        // the 0.9 is to leave some margin around the circle when zoomed in ( 10% )
+        console.log(0.9 / (y(d.r) / Math.min(width, height)));
+        const scale = Math.min(4, 0.9 / (y(d.r) / Math.min(width, height)));
+        const translateX = width / 2 - scale * x(d.cx);
+        const translateY = height / 2 - scale * y(d.cy);
+        const transform = d3.zoomIdentity.translate(translateX, translateY).scale(scale);
+
+        // Animate the zoom using interpolateZoom
+        svg.transition()
+            .duration(750)
+            .call(zoom.transform, transform);
+        
+        isZoomed = true;
+            
+    });
+
+    // Handle background click - zoom out
+    background.on("click", function() {
+        if (isZoomed) {
+            // Remove selection styling
+            if (activeCircle) {
+                d3.select(activeCircle).classed("selected", false);
+                activeCircle = null;
+            }
+            
+            // Animate back to the initial view
+            svg.transition()
+                .duration(750)
+                .call(zoom.transform, initialTransform);
+            
+            isZoomed = false;
+        }
     });
     // Create card background
     // enterSelection.append('rect')
