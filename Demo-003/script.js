@@ -1,11 +1,11 @@
 // Set dimensions for the scatter plot
-const margin = {top: 20, right: 20, bottom: 70, left: 50};
-const width = document.getElementById('scatter-plot').clientWidth - margin.left - margin.right;
-const height = 600 - margin.top - margin.bottom;
+// const margin = {top: 20, right: 20, bottom: 70, left: 50};
+// const width = document.getElementById('scatter-plot').clientWidth - margin.left - margin.right;
+// const height = 600 - margin.top - margin.bottom;
 
 
-// const width = document.getElementById('scatter-plot').clientWidth;
-// const height = 600;
+const width = document.getElementById('scatter-plot').clientWidth;
+const height = 600;
 
 // Define card dimensions
 const cardWidth = 80;
