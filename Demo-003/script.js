@@ -13,31 +13,28 @@ let isZoomed = false;
 // Define data holder
 let carData = [];
 
-// Constants for card x and y coordinates
-const paramX1 = 0;
-const paramY1 = 0;
-const paramX2 = widthScale;
-const paramY2 = heightScale;
-const boundingWidth = paramX2 - paramX1;
-const boundingHeight = paramY2 - paramY1;
-const leftX = boundingWidth / 6;
-const topY = boundingHeight / 6;
-const rightX = boundingWidth / 6 * 5;
-const bottomY = boundingHeight / 6 * 5;
-const midX = boundingWidth / 6 * 3;
-const midY = boundingHeight /6 * 3;
+function getCircleCoords(paramX1, paramY1, paramX2, paramY2) {
+    const boundingWidth = paramX2 - paramX1;
+    const boundingHeight = paramY2 - paramY1;
+    const leftX = boundingWidth / 6;
+    const topY = boundingHeight / 6;
+    const rightX = boundingWidth / 6 * 5;
+    const bottomY = boundingHeight / 6 * 5;
+    const midX = boundingWidth / 6 * 3;
+    const midY = boundingHeight /6 * 3;
 
-const circleCoords = [
-    { cx: midX, cy: midY, boundingBox: { x1: boundingWidth / 6 * 2, y1: boundingHeight / 6 * 2, x2: boundingWidth / 6 * 4, y2: boundingHeight / 6 * 4 } },
-    { cx: leftX, cy: topY, boundingBox: { x1: paramX1, y1: paramY1, x2: boundingWidth / 6 * 2, y2: boundingHeight / 6 * 2 } },
-    { cx: rightX, cy: bottomY, boundingBox: { x1: boundingWidth / 6 * 4, y1: boundingHeight / 6 * 4, x2: paramX2, y2: paramY2 } },
-    { cx: leftX, cy: bottomY, boundingBox: { x1: paramX1, y1: boundingHeight / 6 * 4, x2: boundingWidth / 6 * 2, y2: paramY2 } },
-    { cx: rightX, cy: topY, boundingBox: { x1: boundingWidth / 6 * 4, y1: paramY1, x2: paramX2, y2: boundingHeight / 6 * 2 } },
-    { cx: leftX, cy: midY, boundingBox: { x1: paramX1, y1: boundingHeight / 6 * 2, x2: boundingWidth / 6 * 2, y2: boundingHeight / 6 * 4 } },
-    { cx: rightX, cy: midY, boundingBox: { x1: boundingWidth / 6 * 4, y1: boundingHeight / 6 * 2, x2: paramX2, y2: boundingHeight / 6 * 4 } },
-    { cx: midX, cy: topY, boundingBox: { x1: boundingWidth / 6 * 2, y1: paramY1, x2: boundingWidth / 6 * 4, y2: boundingHeight / 6 * 2 } },
-    { cx: midX, cy: bottomY, boundingBox: { x1: boundingWidth / 6 * 2, y1: boundingHeight / 6 * 4, x2: boundingWidth / 6 * 4, y2: paramY2 } }
-]
+    return [
+        { cx: midX, cy: midY, boundingBox: { x1: boundingWidth / 6 * 2, y1: boundingHeight / 6 * 2, x2: boundingWidth / 6 * 4, y2: boundingHeight / 6 * 4 } },
+        { cx: leftX, cy: topY, boundingBox: { x1: paramX1, y1: paramY1, x2: boundingWidth / 6 * 2, y2: boundingHeight / 6 * 2 } },
+        { cx: rightX, cy: bottomY, boundingBox: { x1: boundingWidth / 6 * 4, y1: boundingHeight / 6 * 4, x2: paramX2, y2: paramY2 } },
+        { cx: leftX, cy: bottomY, boundingBox: { x1: paramX1, y1: boundingHeight / 6 * 4, x2: boundingWidth / 6 * 2, y2: paramY2 } },
+        { cx: rightX, cy: topY, boundingBox: { x1: boundingWidth / 6 * 4, y1: paramY1, x2: paramX2, y2: boundingHeight / 6 * 2 } },
+        { cx: leftX, cy: midY, boundingBox: { x1: paramX1, y1: boundingHeight / 6 * 2, x2: boundingWidth / 6 * 2, y2: boundingHeight / 6 * 4 } },
+        { cx: rightX, cy: midY, boundingBox: { x1: boundingWidth / 6 * 4, y1: boundingHeight / 6 * 2, x2: paramX2, y2: boundingHeight / 6 * 4 } },
+        { cx: midX, cy: topY, boundingBox: { x1: boundingWidth / 6 * 2, y1: paramY1, x2: boundingWidth / 6 * 4, y2: boundingHeight / 6 * 2 } },
+        { cx: midX, cy: bottomY, boundingBox: { x1: boundingWidth / 6 * 2, y1: boundingHeight / 6 * 4, x2: boundingWidth / 6 * 4, y2: paramY2 } }
+    ]
+}
 
 // level value map
 const levelValueFactos = new Map();
@@ -108,6 +105,9 @@ document.addEventListener('DOMContentLoaded', function() {
 });
 
 function setCarData(data) {
+  // Get circle coordinates for level - 1 cars
+  const circleCoords = getCircleCoords(0, 0, widthScale, heightScale);
+
   // Sort data by weight (ascending order)
   data.sort((a, b) => b.weight - a.weight);
 
