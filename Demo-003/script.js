@@ -29,14 +29,14 @@ const midY = boundingHeight /6 * 3;
 
 const circleCoords = [
     { cx: midX, cy: midY, boundingBox: { x1: boundingWidth / 6 * 2, y1: boundingHeight / 6 * 2, x2: boundingWidth / 6 * 4, y2: boundingHeight / 6 * 4 } },
-    { cx: leftX, cy: topY, },
-    { cx: rightX, cy: bottomY },
-    { cx: leftX, cy: bottomY },
-    { cx: rightX, cy: topY },
-    { cx: leftX, cy: midY },
-    { cx: rightX, cy: midY },
-    { cx: midX, cy: topY },
-    { cx: midX, cy: bottomY }
+    { cx: leftX, cy: topY, boundingBox: { x1: paramX1, y1: paramY1, x2: boundingWidth / 6 * 2, y2: boundingHeight / 6 * 2 } },
+    { cx: rightX, cy: bottomY, boundingBox: { x1: boundingWidth / 6 * 4, y1: boundingHeight / 6 * 4, x2: paramX2, y2: paramY2 } },
+    { cx: leftX, cy: bottomY, boundingBox: { x1: paramX1, y1: boundingHeight / 6 * 4, x2: boundingWidth / 6 * 2, y2: paramY2 } },
+    { cx: rightX, cy: topY, boundingBox: { x1: boundingWidth / 6 * 4, y1: paramY1, x2: paramX2, y2: boundingHeight / 6 * 2 } },
+    { cx: leftX, cy: midY, boundingBox: { x1: paramX1, y1: boundingHeight / 6 * 2, x2: boundingWidth / 6 * 2, y2: boundingHeight / 6 * 4 } },
+    { cx: rightX, cy: midY, boundingBox: { x1: boundingWidth / 6 * 4, y1: boundingHeight / 6 * 2, x2: paramX2, y2: boundingHeight / 6 * 4 } },
+    { cx: midX, cy: topY, boundingBox: { x1: boundingWidth / 6 * 2, y1: paramY1, x2: boundingWidth / 6 * 4, y2: boundingHeight / 6 * 2 } },
+    { cx: midX, cy: bottomY, boundingBox: { x1: boundingWidth / 6 * 2, y1: boundingHeight / 6 * 4, x2: boundingWidth / 6 * 4, y2: paramY2 } }
 ]
 
 // level value map
