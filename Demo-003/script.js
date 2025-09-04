@@ -2,6 +2,10 @@
 const width = document.getElementById('scatter-plot').clientWidth;
 const height = 600;
 
+// Set scales
+const widthScale = 30000;
+const heightScale = 30000;
+
 // Define dimensions and parameters
 let activeCircle = null;
 let isZoomed = false;
@@ -76,27 +80,57 @@ const y = d3.scaleLinear()
 // Wait for the DOM to be fully loaded
 document.addEventListener('DOMContentLoaded', function() {
 
+    // Add event listener to the "Add Car" button
+    document.getElementById('add-car').addEventListener('click', addCar);
+
+    // Load initial data and render visualization
     d3.json('data/circles.json').then(function(data) {
-        // Sort data by weight (ascending order)
-        data.sort((a, b) => b.weight - a.weight);
-
-        // How can I only take the top 9 items?
-        data = data.slice(0, circleCoords.length);
-
-        // Then assign positions
-        data.forEach((d, i) => {
-            d.cx = circleCoords[i % circleCoords.length].cx;
-            d.cy = circleCoords[i % circleCoords.length].cy;
-            d.r = d.weight * levelValueFactos.get(d.level);
-        });
-
-        carData = data;
+        carData = setCarData(data);
         
         updateVisualization(carData);
     });
 });
 
+function setCarData(data) {
+  // Sort data by weight (ascending order)
+  data.sort((a, b) => b.weight - a.weight);
+
+  // How can I only take the top 9 items?
+  data = data.slice(0, circleCoords.length);
+
+  // Then assign positions
+  data.forEach((d, i) => {
+      d.cx = circleCoords[i % circleCoords.length].cx;
+      d.cy = circleCoords[i % circleCoords.length].cy;
+      d.r = d.weight * levelValueFactos.get(d.level);
+  });
+
+  return data;
+}
+
+function addCar() {
+    // Get the car weight from the input field
+    const carWeightInput = document.getElementById('car-weight');
+    const carWeight = parseInt(carWeightInput.value);
+
+    // Get the car name from the input field
+    const carNameInput = document.getElementById('car-name');
+    const carName = carNameInput.value;
+
+    if (!isNaN(carWeight)) {
+        const newCar = {
+            weight: carWeight,
+            name: carName + carWeight,
+            level: 1
+        };
+        carData.push(newCar);
+        carData = setCarData(carData);
+        updateVisualization(carData);
+    }
+}
+
 function updateVisualization(data) {
+    console.log(data);
     updateScatterPlot(data);
 }
 
@@ -104,8 +138,8 @@ function updateScatterPlot(data) {
     const t = d3.transition().duration(750);
 
     // Create scales
-    x.domain([0, 30000]);
-    y.domain([0, 30000]);
+    x.domain([0, widthScale]);
+    y.domain([0, heightScale]);
 
     // Create cards for each car data point as SVG elements
     const cardGroup = g.selectAll('circle').data(data, d => d.name);
