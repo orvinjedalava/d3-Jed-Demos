@@ -183,42 +183,46 @@ function updateScatterPlot(data) {
 
     // Handle new elements - append both the group and the rect to new elements only
     const enterSelection = cardGroup.enter().append('circle')
-        .join('circle')
-          .attr("r", d => y(d.r))
-          .attr("cx", d => x(d.cx))
-          .attr("cy", d => y(d.cy))
-          .attr("fill", (d, i) => "lightgreen")
-          .on("mouseover", function() { d3.select(this).attr("stroke", "#000"); })
-          .on("mouseout", function() { d3.select(this).attr("stroke", null); });
+        .style('opacity', 0)
+        // .join('circle')
+        .attr("r", d => y(d.r))
+        .attr("cx", d => x(d.cx))
+        .attr("cy", d => y(d.cy))
+        .attr("fill", (d, i) => "lightgreen")
+        .on("mouseover", function() { d3.select(this).attr("stroke", "#000"); })
+        .on("mouseout", function() { d3.select(this).attr("stroke", null); })
+        .on('click', function(event, d) {
+            // Prevent triggering background click
+            event.stopPropagation();
 
-    enterSelection.on('click', function(event, d) {
-        // Prevent triggering background click
-        event.stopPropagation();
+            // Remove previous selection styling
+            if (activeCircle) {
+                d3.select(activeCircle).classed("selected", false);
+            }
 
-        // Remove previous selection styling
-        if (activeCircle) {
-            d3.select(activeCircle).classed("selected", false);
-        }
+            // Add selection styling to clicked circle
+            d3.select(this).classed("selected", true);
+            activeCircle = this;
 
-        // Add selection styling to clicked circle
-        d3.select(this).classed("selected", true);
-        activeCircle = this;
+            // Calculate the transform needed to center and zoom on this circle
+            // NOTE: set scale to max of 8.
+            const scale = Math.min(width, height) / (y(d.r)) * (1 - (Math.min(width, height) / Math.max(width, height)));
+            const translateX = width / 2 - scale * x(d.cx);
+            const translateY = height / 2 - scale * y(d.cy);
+            const transform = d3.zoomIdentity.translate(translateX, translateY).scale(scale);
 
-        // Calculate the transform needed to center and zoom on this circle
-        // NOTE: set scale to max of 8.
-        const scale = Math.min(width, height) / (y(d.r)) * (1 - (Math.min(width, height) / Math.max(width, height)));
-        const translateX = width / 2 - scale * x(d.cx);
-        const translateY = height / 2 - scale * y(d.cy);
-        const transform = d3.zoomIdentity.translate(translateX, translateY).scale(scale);
-
-        // Animate the zoom using interpolateZoom
-        svg.transition()
-            .duration(750)
-            .call(zoom.transform, transform);
-        
-        isZoomed = true;
+            // Animate the zoom using interpolateZoom
+            svg.transition()
+                .duration(750)
+                .call(zoom.transform, transform);
             
-    });
+            isZoomed = true;
+                
+        })
+        .transition(t)
+        .style('opacity', 1);
+
+    
 
     // Handle background click - zoom out
     background.on("click", function() {
