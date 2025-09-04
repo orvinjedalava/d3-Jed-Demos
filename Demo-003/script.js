@@ -3,8 +3,8 @@ const width = document.getElementById('scatter-plot').clientWidth;
 const height = 600;
 
 // Set scales
-const widthScale = 30000;
-const heightScale = 30000;
+const widthScale = 90000;
+const heightScale = 90000;
 
 // Define dimensions and parameters
 let activeCircle = null;
@@ -14,16 +14,23 @@ let isZoomed = false;
 let carData = [];
 
 // Constants for card x and y coordinates
+const leftX = widthScale /6;
+const topY = heightScale /6;
+const rightX = widthScale /6 * 5;
+const bottomY = heightScale /6 * 5;
+const midX = widthScale /6 * 3;
+const midY = heightScale /6 * 3;
+
 const circleCoords = [
-    { cx: 15000, cy: 15000 },
-    { cx: 5000, cy: 5000 },
-    { cx: 25000, cy: 25000 },
-    { cx: 5000, cy: 25000 },
-    { cx: 25000, cy: 5000 },
-    { cx: 5000, cy: 15000 },
-    { cx: 25000, cy: 15000 },
-    { cx: 15000, cy: 5000 },
-    { cx: 15000, cy: 25000 }
+    { cx: midX, cy: midY },
+    { cx: leftX, cy: topY },
+    { cx: rightX, cy: bottomY },
+    { cx: leftX, cy: bottomY },
+    { cx: rightX, cy: topY },
+    { cx: leftX, cy: midY },
+    { cx: rightX, cy: midY },
+    { cx: midX, cy: topY },
+    { cx: midX, cy: bottomY }
 ]
 
 // level value map

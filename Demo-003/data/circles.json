@@ -1,5 +1,5 @@
 [
-  {"weight": 4, "name": "Circle A", "level":1},
-  {"weight": 3, "name": "Circle B", "level":1},
-  {"weight": 2, "name": "Circle C", "level":1}
+  {"weight": 3, "name": "Circle A", "level":1},
+  {"weight": 2, "name": "Circle B", "level":1},
+  {"weight": 1, "name": "Circle C", "level":1}
 ]
