@@ -1,6 +1,7 @@
 // Set dimensions for the scatter plot
 const width = document.getElementById('scatter-plot').clientWidth;
 const height = 600;
+const animationDuration = 750;
 
 // Set scales
 const widthScale = 90000;
@@ -11,40 +12,18 @@ const fillColors = ["lightgreen", "blue", "red", "lightgoldenrodyellow", "lightp
 
 // Define dimensions and parameters
 let activeCircle = null;
-let isZoomed = false;
+
+// Define active circles stack
+const activeCircleStack = [];
 
 // Define data holder
 let carData = [];
-
-function getCircleCoords(paramX1, paramY1, paramX2, paramY2) {
-    const boundingWidth = paramX2 - paramX1;
-    const boundingHeight = paramY2 - paramY1;
-    const leftX = boundingWidth / 6 + paramX1;
-    const topY = boundingHeight / 6 + paramY1;
-    const rightX = boundingWidth / 6 * 5 + paramX1;
-    const bottomY = boundingHeight / 6 * 5 + paramY1;
-    const midX = boundingWidth / 6 * 3 + paramX1;
-    const midY = boundingHeight / 6 * 3 + paramY1;
-
-    return [
-        { cx: midX, cy: midY, boundingBox: { x1: boundingWidth / 6 * 2 + paramX1, y1: boundingHeight / 6 * 2 + paramY1, x2: boundingWidth / 6 * 4 + paramX1, y2: boundingHeight / 6 * 4 + paramY1 } },
-        { cx: leftX, cy: topY, boundingBox: { x1: paramX1, y1: paramY1, x2: boundingWidth / 6 * 2 + paramX1, y2: boundingHeight / 6 * 2 + paramY1 } },
-        { cx: rightX, cy: bottomY, boundingBox: { x1: boundingWidth / 6 * 4 + paramX1, y1: boundingHeight / 6 * 4 + paramY1, x2: paramX2, y2: paramY2 } },
-        { cx: leftX, cy: bottomY, boundingBox: { x1: paramX1, y1: boundingHeight / 6 * 4 + paramY1, x2: boundingWidth / 6 * 2 + paramX1, y2: paramY2 } },
-        { cx: rightX, cy: topY, boundingBox: { x1: boundingWidth / 6 * 4 + paramX1, y1: paramY1, x2: paramX2, y2: boundingHeight / 6 * 2 + paramY1 } },
-        { cx: leftX, cy: midY, boundingBox: { x1: paramX1, y1: boundingHeight / 6 * 2 + paramY1, x2: boundingWidth / 6 * 2 + paramX1, y2: boundingHeight / 6 * 4 + paramY1 } },
-        { cx: rightX, cy: midY, boundingBox: { x1: boundingWidth / 6 * 4 + paramX1, y1: boundingHeight / 6 * 2 + paramY1, x2: paramX2, y2: boundingHeight / 6 * 4 + paramY1 } },
-        { cx: midX, cy: topY, boundingBox: { x1: boundingWidth / 6 * 2 + paramX1, y1: paramY1, x2: boundingWidth / 6 * 4 + paramX1, y2: boundingHeight / 6 * 2 + paramY1 } },
-        { cx: midX, cy: bottomY, boundingBox: { x1: boundingWidth / 6 * 2 + paramX1, y1: boundingHeight / 6 * 4 + paramY1, x2: boundingWidth / 6 * 4 + paramX1, y2: paramY2 } }
-    ]
-}
 
 // level value map
 const levelValueFactos = new Map();
 levelValueFactos.set(1, 1000);
 levelValueFactos.set(2, 100);
 levelValueFactos.set(3, 10);
-
 
 // Create SVG for the scatter plot
 const svg = d3.select('#scatter-plot')
@@ -109,6 +88,29 @@ document.addEventListener('DOMContentLoaded', function() {
         updateVisualization(circlesData);
     });
 });
+
+function getCircleCoords(paramX1, paramY1, paramX2, paramY2) {
+    const boundingWidth = paramX2 - paramX1;
+    const boundingHeight = paramY2 - paramY1;
+    const leftX = boundingWidth / 6 + paramX1;
+    const topY = boundingHeight / 6 + paramY1;
+    const rightX = boundingWidth / 6 * 5 + paramX1;
+    const bottomY = boundingHeight / 6 * 5 + paramY1;
+    const midX = boundingWidth / 6 * 3 + paramX1;
+    const midY = boundingHeight / 6 * 3 + paramY1;
+
+    return [
+        { cx: midX, cy: midY, boundingBox: { x1: boundingWidth / 6 * 2 + paramX1, y1: boundingHeight / 6 * 2 + paramY1, x2: boundingWidth / 6 * 4 + paramX1, y2: boundingHeight / 6 * 4 + paramY1 } },
+        { cx: leftX, cy: topY, boundingBox: { x1: paramX1, y1: paramY1, x2: boundingWidth / 6 * 2 + paramX1, y2: boundingHeight / 6 * 2 + paramY1 } },
+        { cx: rightX, cy: bottomY, boundingBox: { x1: boundingWidth / 6 * 4 + paramX1, y1: boundingHeight / 6 * 4 + paramY1, x2: paramX2, y2: paramY2 } },
+        { cx: leftX, cy: bottomY, boundingBox: { x1: paramX1, y1: boundingHeight / 6 * 4 + paramY1, x2: boundingWidth / 6 * 2 + paramX1, y2: paramY2 } },
+        { cx: rightX, cy: topY, boundingBox: { x1: boundingWidth / 6 * 4 + paramX1, y1: paramY1, x2: paramX2, y2: boundingHeight / 6 * 2 + paramY1 } },
+        { cx: leftX, cy: midY, boundingBox: { x1: paramX1, y1: boundingHeight / 6 * 2 + paramY1, x2: boundingWidth / 6 * 2 + paramX1, y2: boundingHeight / 6 * 4 + paramY1 } },
+        { cx: rightX, cy: midY, boundingBox: { x1: boundingWidth / 6 * 4 + paramX1, y1: boundingHeight / 6 * 2 + paramY1, x2: paramX2, y2: boundingHeight / 6 * 4 + paramY1 } },
+        { cx: midX, cy: topY, boundingBox: { x1: boundingWidth / 6 * 2 + paramX1, y1: paramY1, x2: boundingWidth / 6 * 4 + paramX1, y2: boundingHeight / 6 * 2 + paramY1 } },
+        { cx: midX, cy: bottomY, boundingBox: { x1: boundingWidth / 6 * 2 + paramX1, y1: boundingHeight / 6 * 4 + paramY1, x2: boundingWidth / 6 * 4 + paramX1, y2: paramY2 } }
+    ]
+}
 
 function setCarData(data) {
   let transformedData = [];
@@ -193,12 +195,100 @@ function removeCar() {
 
 
 function updateVisualization(data) {
-    console.log(data);
     updateScatterPlot(data);
 }
 
+function removeActiveCircleStyling() {
+    if (activeCircle) {
+        d3.select(activeCircle).classed("selected", false);
+        activeCircle = null;
+    }
+}
+
+function zoomTo(circle) {
+    console.log("Zooming to circle:", circle);
+
+    // Remove previous selection styling
+    removeActiveCircleStyling();
+
+    // Calculate the transform needed to center and zoom on this circle
+    let transform = initialTransform;
+
+    if (circle) {
+      const currentData = d3.select(circle).datum();
+      // Add selection styling to clicked circle
+      d3.select(circle).classed("selected", true);
+      activeCircle = circle;
+
+      // Calculate the bounding box in screen space
+      const x1 = x(currentData.boundingBox.x1);
+      const y1 = y(currentData.boundingBox.y1);
+      const x2 = x(currentData.boundingBox.x2);
+      const y2 = y(currentData.boundingBox.y2);
+
+      // Calculate the width and height of the bounding box in screen space
+      const boxWidth = x2 - x1;
+      const boxHeight = y2 - y1;
+
+      // Calculate the scale needed to fit the bounding box in the viewport
+      // Adding some padding (0.9) to avoid zooming right to the edges
+      const scaleX = (width / boxWidth) * 0.9;
+      const scaleY = (height / boxHeight) * 0.9;
+      const scale = Math.min(scaleX, scaleY); // Use the smaller scale to ensure the entire box is visible
+
+      // Calculate the center of the bounding box
+      const boxCenterX = x1 + boxWidth / 2;
+      const boxCenterY = y1 + boxHeight / 2;
+
+      // Calculate the transform needed to center and zoom on the bounding box
+      const translateX = width / 2 - scale * boxCenterX;
+      const translateY = height / 2 - scale * boxCenterY;
+      transform = d3.zoomIdentity.translate(translateX, translateY).scale(scale);
+    }
+
+    // Animate the zoom using the calculated transform
+    svg.transition()
+        .duration(animationDuration)
+        .call(zoom.transform, transform);
+}
+
+function zoomToSibling(circle) {
+    // remove latest from stack
+    activeCircleStack.pop();
+
+    zoomTo(circle);
+}
+
+function zoomToRoot() {
+    zoomTo(null);
+}
+
+function zoomToParent() {
+    if (activeCircleStack.length > 0) {
+        // remove latest circle from stack
+        activeCircleStack.pop();
+    }
+
+    zoomToLatest();
+}
+
+function zoomToLatest() {
+  if (activeCircleStack.length === 0) {
+      zoomToRoot();
+  }
+  else {
+      const newActiveCircle = activeCircleStack[activeCircleStack.length - 1];
+      zoomTo(newActiveCircle);
+  }
+}
+
+function zoomToChild(circle) {
+  activeCircleStack.push(circle);
+  zoomTo(circle);
+}
+
 function updateScatterPlot(data) {
-    const t = d3.transition().duration(750);
+    const t = d3.transition().duration(animationDuration);
 
     // Create scales
     x.domain([0, widthScale]);
@@ -231,14 +321,30 @@ function updateScatterPlot(data) {
             // Prevent triggering background click
             event.stopPropagation();
 
-            // Remove previous selection styling
-            if (activeCircle) {
-                d3.select(activeCircle).classed("selected", false);
+            const latestStackCircle = activeCircleStack.length > 0 ? activeCircleStack[activeCircleStack.length - 1] : null;
+
+            // Clicked the already active circle, do nothing
+            if (latestStackCircle === this) {
+                return;
             }
 
-            // Add selection styling to clicked circle
-            d3.select(this).classed("selected", true);
-            activeCircle = this;
+            // Zoom to clicked circle if stack is empty.
+            if (!latestStackCircle) {
+                zoomToChild(this);
+                return;
+            }
+
+            const lastDataCircle = d3.select(latestStackCircle).datum();
+
+            if (d.level <= lastDataCircle.level) {
+              zoomToParent();
+            }
+            else if (d.level === lastDataCircle.level) {
+              zoomToSibling(this);
+            }
+            else {
+              zoomToChild(this);
+            }
 
             // // Calculate the transform needed to center and zoom on this circle
             // // NOTE: set scale to max of 8.
@@ -251,39 +357,7 @@ function updateScatterPlot(data) {
             // svg.transition()
             //     .duration(750)
             //     .call(zoom.transform, transform);
-
-            // Calculate the bounding box in screen space
-            const x1 = x(d.boundingBox.x1);
-            const y1 = y(d.boundingBox.y1);
-            const x2 = x(d.boundingBox.x2);
-            const y2 = y(d.boundingBox.y2);
-
-            // Calculate the width and height of the bounding box in screen space
-            const boxWidth = x2 - x1;
-            const boxHeight = y2 - y1;
-
-            // Calculate the scale needed to fit the bounding box in the viewport
-            // Adding some padding (0.9) to avoid zooming right to the edges
-            const scaleX = (width / boxWidth) * 0.9;
-            const scaleY = (height / boxHeight) * 0.9;
-            const scale = Math.min(scaleX, scaleY); // Use the smaller scale to ensure the entire box is visible
-
-            // Calculate the center of the bounding box
-            const boxCenterX = x1 + boxWidth / 2;
-            const boxCenterY = y1 + boxHeight / 2;
-
-            // Calculate the transform needed to center and zoom on the bounding box
-            const translateX = width / 2 - scale * boxCenterX;
-            const translateY = height / 2 - scale * boxCenterY;
-            const transform = d3.zoomIdentity.translate(translateX, translateY).scale(scale);
-
-            // Animate the zoom using the calculated transform
-            svg.transition()
-                .duration(750)
-                .call(zoom.transform, transform);
-            
-            isZoomed = true;
-                
+    
         })
         .transition(t)
         .style('opacity', 1);
@@ -292,20 +366,7 @@ function updateScatterPlot(data) {
 
     // Handle background click - zoom out
     background.on("click", function() {
-        if (isZoomed) {
-            // Remove selection styling
-            if (activeCircle) {
-                d3.select(activeCircle).classed("selected", false);
-                activeCircle = null;
-            }
-            
-            // Animate back to the initial view
-            svg.transition()
-                .duration(750)
-                .call(zoom.transform, initialTransform);
-            
-            isZoomed = false;
-        }
+        zoomToParent();
     });
     
     // Now apply the transition
