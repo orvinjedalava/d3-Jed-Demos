@@ -120,17 +120,21 @@ function getCircleCoords(paramX1, paramY1, paramX2, paramY2) {
     const bottomY = boundingHeight / 6 * 5 + paramY1;
     const midX = boundingWidth / 6 * 3 + paramX1;
     const midY = boundingHeight / 6 * 3 + paramY1;
+    const cardWidth = boundingWidth / 6;
+    const cardHeight = boundingHeight / 6;
+    const imageHeight = cardHeight * 0.6;
+    const fontSize = cardHeight * 0.10;
 
     return [
-        { cx: midX, cy: midY, boundingBox: { x1: boundingWidth / 6 * 2 + paramX1, y1: boundingHeight / 6 * 2 + paramY1, x2: boundingWidth / 6 * 4 + paramX1, y2: boundingHeight / 6 * 4 + paramY1 } },
-        { cx: leftX, cy: topY, boundingBox: { x1: paramX1, y1: paramY1, x2: boundingWidth / 6 * 2 + paramX1, y2: boundingHeight / 6 * 2 + paramY1 } },
-        { cx: rightX, cy: bottomY, boundingBox: { x1: boundingWidth / 6 * 4 + paramX1, y1: boundingHeight / 6 * 4 + paramY1, x2: paramX2, y2: paramY2 } },
-        { cx: leftX, cy: bottomY, boundingBox: { x1: paramX1, y1: boundingHeight / 6 * 4 + paramY1, x2: boundingWidth / 6 * 2 + paramX1, y2: paramY2 } },
-        { cx: rightX, cy: topY, boundingBox: { x1: boundingWidth / 6 * 4 + paramX1, y1: paramY1, x2: paramX2, y2: boundingHeight / 6 * 2 + paramY1 } },
-        { cx: leftX, cy: midY, boundingBox: { x1: paramX1, y1: boundingHeight / 6 * 2 + paramY1, x2: boundingWidth / 6 * 2 + paramX1, y2: boundingHeight / 6 * 4 + paramY1 } },
-        { cx: rightX, cy: midY, boundingBox: { x1: boundingWidth / 6 * 4 + paramX1, y1: boundingHeight / 6 * 2 + paramY1, x2: paramX2, y2: boundingHeight / 6 * 4 + paramY1 } },
-        { cx: midX, cy: topY, boundingBox: { x1: boundingWidth / 6 * 2 + paramX1, y1: paramY1, x2: boundingWidth / 6 * 4 + paramX1, y2: boundingHeight / 6 * 2 + paramY1 } },
-        { cx: midX, cy: bottomY, boundingBox: { x1: boundingWidth / 6 * 2 + paramX1, y1: boundingHeight / 6 * 4 + paramY1, x2: boundingWidth / 6 * 4 + paramX1, y2: paramY2 } }
+        { cx: midX, cy: midY, fontSize: fontSize, cardWidth: cardWidth, cardHeight: cardHeight, imageHeight: imageHeight, boundingBox: { x1: boundingWidth / 6 * 2 + paramX1, y1: boundingHeight / 6 * 2 + paramY1, x2: boundingWidth / 6 * 4 + paramX1, y2: boundingHeight / 6 * 4 + paramY1 } },
+        { cx: leftX, cy: topY, fontSize: fontSize, cardWidth: cardWidth, cardHeight: cardHeight, imageHeight: imageHeight, boundingBox: { x1: paramX1, y1: paramY1, x2: boundingWidth / 6 * 2 + paramX1, y2: boundingHeight / 6 * 2 + paramY1 } },
+        { cx: rightX, cy: bottomY, fontSize: fontSize, cardWidth: cardWidth, cardHeight: cardHeight, imageHeight: imageHeight, boundingBox: { x1: boundingWidth / 6 * 4 + paramX1, y1: boundingHeight / 6 * 4 + paramY1, x2: paramX2, y2: paramY2 } },
+        { cx: leftX, cy: bottomY, fontSize: fontSize, cardWidth: cardWidth, cardHeight: cardHeight, imageHeight: imageHeight, boundingBox: { x1: paramX1, y1: boundingHeight / 6 * 4 + paramY1, x2: boundingWidth / 6 * 2 + paramX1, y2: paramY2 } },
+        { cx: rightX, cy: topY, fontSize: fontSize, cardWidth: cardWidth, cardHeight: cardHeight, imageHeight: imageHeight, boundingBox: { x1: boundingWidth / 6 * 4 + paramX1, y1: paramY1, x2: paramX2, y2: boundingHeight / 6 * 2 + paramY1 } },
+        { cx: leftX, cy: midY, fontSize: fontSize, cardWidth: cardWidth, cardHeight: cardHeight, imageHeight: imageHeight, boundingBox: { x1: paramX1, y1: boundingHeight / 6 * 2 + paramY1, x2: boundingWidth / 6 * 2 + paramX1, y2: boundingHeight / 6 * 4 + paramY1 } },
+        { cx: rightX, cy: midY, fontSize: fontSize, cardWidth: cardWidth, cardHeight: cardHeight, imageHeight: imageHeight, boundingBox: { x1: boundingWidth / 6 * 4 + paramX1, y1: boundingHeight / 6 * 2 + paramY1, x2: paramX2, y2: boundingHeight / 6 * 4 + paramY1 } },
+        { cx: midX, cy: topY, fontSize: fontSize, cardWidth: cardWidth, cardHeight: cardHeight, imageHeight: imageHeight, boundingBox: { x1: boundingWidth / 6 * 2 + paramX1, y1: paramY1, x2: boundingWidth / 6 * 4 + paramX1, y2: boundingHeight / 6 * 2 + paramY1 } },
+        { cx: midX, cy: bottomY, fontSize: fontSize, cardWidth: cardWidth, cardHeight: cardHeight, imageHeight: imageHeight, boundingBox: { x1: boundingWidth / 6 * 2 + paramX1, y1: boundingHeight / 6 * 4 + paramY1, x2: boundingWidth / 6 * 4 + paramX1, y2: paramY2 } }
     ]
 }
 
@@ -139,9 +143,6 @@ function setCircleData(data) {
 
   transformData(data, transformedData);
 
-  console.log(rootToLeavesMap);
-  console.log(leafToRootMap);
-  
   return transformedData;
 }
 
@@ -171,12 +172,6 @@ function transformData(leaves, containerData, rootId = 0, fillColorIndex = 0, x1
     rootToLeavesMap.set(rootId, []);
 
     leaves.map((leaf, i) => {
-        // leaf.id = generateId();
-        
-        // if rootId exists as key in rootToLeavesMap, add this parent id to its array
-        // if (rootToLeavesMap.has(rootId)) {
-        //   rootToLeavesMap.get(rootId).push(leaf.id);
-        // }
         rootToLeavesMap.get(rootId).push(leaf.id);
         leafToRootMap.set(leaf.id, rootId);
 
@@ -185,6 +180,10 @@ function transformData(leaves, containerData, rootId = 0, fillColorIndex = 0, x1
         leaf.r = leaf.weight * levelValueFactors.get(leaf.level);
         leaf.fill = fillColors[fillColorIndex % fillColors.length];
         leaf.boundingBox = circleCoords[i % circleCoords.length].boundingBox;
+        leaf.cardWidth = circleCoords[i % circleCoords.length].cardWidth;
+        leaf.cardHeight = circleCoords[i % circleCoords.length].cardHeight;
+        leaf.imageHeight = circleCoords[i % circleCoords.length].imageHeight;
+        leaf.fontSize = circleCoords[i % circleCoords.length].fontSize;
         
         containerData.push(leaf);
 
@@ -294,7 +293,6 @@ function removeCar() {
 function updateVisualization(data) {
     updateScatterPlot(data);
 
-    console.log(circlesMap);
 }
 
 function removeActiveCircleStyling() {
@@ -450,7 +448,7 @@ function updateScatterPlot(data) {
     y.domain([0, heightScale]);
 
     // Create cards for each car data point as SVG elements
-    const cardGroup = g.selectAll('circle').data(data, d => d.id);
+    const cardGroup = g.selectAll('.card-group').data(data, d => d.id);
 
     // Handle elements that need to be removed
     cardGroup.exit()
@@ -475,8 +473,8 @@ function updateScatterPlot(data) {
     cardGroup
     .transition(t)
         .attr('transform', (d) => {
-            const xPos = x(d.cx) - cardWidth / 2;
-            const yPos = y(d.cy) - cardHeight / 2;
+            const xPos = x(d.cx) - x(d.cardWidth) / 2;
+            const yPos = y(d.cy) - y(d.cardHeight) / 2;
             return `translate(${xPos}, ${yPos})`;
         })
 
@@ -486,8 +484,8 @@ function updateScatterPlot(data) {
     const enterSelection = cardGroup.enter().append('g')
         .attr('class', 'card-group')
         .attr('transform', (d) => {
-            const xPos = x(d.cx) - cardWidth / 2;
-            const yPos = y(d.cy) - cardHeight / 2;
+            const xPos = x(d.cx) - x(d.cardWidth) / 2;
+            const yPos = y(d.cy) - y(d.cardHeight) / 2;
             return `translate(${xPos}, ${yPos})`;
         })
 
@@ -542,8 +540,8 @@ function updateScatterPlot(data) {
     // Create card background
     enterSelection.append('rect')
         .attr('class', 'card-rect')
-        .attr('width', cardWidth)
-        .attr('height', cardHeight)
+        .attr('width', d => x(d.cardWidth))
+        .attr('height', d => y(d.cardHeight))
         .attr('fill', (d, i) => d3.schemeCategory10[i % 10] + '20') // Light version of the color
         .attr('stroke', (d, i) => d3.schemeCategory10[i % 10]);
 
@@ -552,15 +550,18 @@ function updateScatterPlot(data) {
         .attr('href', 'images/BMW.jpg')
         .attr('x', 0)
         .attr('y', 0)
-        .attr('width', cardWidth)
-        .attr('height', imageHeight)
+        .attr('width', d => x(d.cardWidth))
+        .attr('height', d => y(d.imageHeight))
         .attr('preserveAspectRatio', 'xMidYMid slice');
 
     // Add car make text
     enterSelection.append('text')
         .attr('class', 'card-text')
-        .attr('x', cardWidth / 2)
-        .attr('y', imageHeight + 15)
+        .attr('x', d => x(d.cardWidth) / 2)
+        .attr('y', d => y(d.imageHeight) + y(d.cardHeight * 0.25))
+        .style('font-size', d => y(d.fontSize))
+        .style('text-anchor', 'middle')
+        .style('dominant-baseline', 'middle')
         .text((d) => d.name);
 
     enterSelection.transition(t)
