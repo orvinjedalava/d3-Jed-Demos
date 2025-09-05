@@ -6,6 +6,9 @@ const height = 600;
 const widthScale = 90000;
 const heightScale = 90000;
 
+// Fill Colors
+const fillColors = ["lightgreen", "blue", "red", "lightgoldenrodyellow", "lightpink", "lightgray"];
+
 // Define dimensions and parameters
 let activeCircle = null;
 let isZoomed = false;
@@ -101,81 +104,54 @@ document.addEventListener('DOMContentLoaded', function() {
       // carData = data;
         // carData = setCarData(data);
         carData = data;
-        const circlesData = transformData(carData);
+        const circlesData = setCarData(carData);
         
         updateVisualization(circlesData);
     });
 });
 
 function setCarData(data) {
-  // Get circle coordinates for level - 1 cars
-  const circleCoords = getCircleCoords(0, 0, widthScale, heightScale);
-
-  // Sort data by weight (ascending order)
-  data.sort((a, b) => b.weight - a.weight);
-
-  // How can I only take the top 9 items?
-  data = data.slice(0, circleCoords.length);
-
-  // Then assign positions
-  data.forEach((d, i) => {
-      d.cx = circleCoords[i % circleCoords.length].cx;
-      d.cy = circleCoords[i % circleCoords.length].cy;
-      d.r = d.weight * levelValueFactos.get(d.level);
-  });
-
-  return data;
-}
-
-function transformData(data) {
-  console.log(data);
   let transformedData = [];
 
+  transformData(data, transformedData);
+
+  return transformedData;
+}
+
+function transformData(parent, containerData, fillColorIndex = 0, x1 = 0, y1 = 0, x2 = widthScale, y2 = heightScale) {
   // Get circle coordinates for level - 1 cars
-  const circleCoordsLevel1 = getCircleCoords(0, 0, widthScale, heightScale);
+  const circleCoordsLevel1 = getCircleCoords(x1, y1, x2, y2);
 
   // sort data by level first (descending order)
-  data.sort((a, b) => b.weight - a.weight);
+  parent.sort((a, b) => b.weight - a.weight);
 
   // How can I only take the top 9 items?
-  data = data.slice(0, circleCoordsLevel1.length);
+  parent = parent.slice(0, circleCoordsLevel1.length);
 
-  data.map((level1Data, i) => {
-    level1Data.cx = circleCoordsLevel1[i % circleCoordsLevel1.length].cx;
-    level1Data.cy = circleCoordsLevel1[i % circleCoordsLevel1.length].cy;
-    level1Data.r = level1Data.weight * levelValueFactos.get(level1Data.level);
-    level1Data.fill = "lightgreen";
-    level1Data.boundingBox = circleCoordsLevel1[i % circleCoordsLevel1.length].boundingBox;
+  parent.map((child, i) => {
+    child.cx = circleCoordsLevel1[i % circleCoordsLevel1.length].cx;
+    child.cy = circleCoordsLevel1[i % circleCoordsLevel1.length].cy;
+    child.r = child.weight * levelValueFactos.get(child.level);
+    child.fill = fillColors[fillColorIndex % fillColors.length];
+    child.boundingBox = circleCoordsLevel1[i % circleCoordsLevel1.length].boundingBox;
     // level1Data.children = data.filter(d => d.parent === level1Data.name);
 
-    transformedData.push(level1Data);
+    containerData.push(child);
 
-    if (level1Data.children) {
-      const circleCoordsLevel2 = getCircleCoords(
-          level1Data.boundingBox.x1, 
-          level1Data.boundingBox.y1, 
-          level1Data.boundingBox.x2, 
-          level1Data.boundingBox.y2
-        );
-
-      level1Data.children.sort((a, b) => b.weight - a.weight);
-
-      // How can I only take the top 9 items?
-      level1Data.children = level1Data.children.slice(0, circleCoordsLevel2.length);
-
-      level1Data.children.map((level2Data, j) => {
-        level2Data.cx = circleCoordsLevel2[j % circleCoordsLevel2.length].cx;
-        level2Data.cy = circleCoordsLevel2[j % circleCoordsLevel2.length].cy;
-        level2Data.r = level2Data.weight * levelValueFactos.get(level2Data.level);
-        level2Data.fill = "blue";
-        level2Data.boundingBox = circleCoordsLevel2[j % circleCoordsLevel2.length].boundingBox;
-
-        transformedData.push(level2Data);
-      });
+    if (child.children) {
+      transformData(
+        child.children, 
+        containerData, 
+        fillColorIndex + 1, 
+        child.boundingBox.x1, 
+        child.boundingBox.y1, 
+        child.boundingBox.x2, 
+        child.boundingBox.y2
+      );
     }
   });
 
-  return transformedData;
+  return containerData;
 }
 
 function addCar() {
@@ -194,7 +170,7 @@ function addCar() {
             level: 1
         };
         carData.push(newCar);
-        const circlesData = transformData(carData);
+        const circlesData = setCarData(carData);
         updateVisualization(circlesData);
     }
 }
@@ -211,7 +187,7 @@ function removeCar() {
 
     // remove a car by index
     carData.splice(carIndex, 1);
-    const circlesData = transformData(carData);
+    const circlesData = setCarData(carData);
     updateVisualization(circlesData);
 }
 
