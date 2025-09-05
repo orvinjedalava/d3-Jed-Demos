@@ -131,8 +131,6 @@ function setCarData(data) {
 
   transformData(data, transformedData);
 
-  console.log(parentChildMap);
-
   return transformedData;
 }
 
