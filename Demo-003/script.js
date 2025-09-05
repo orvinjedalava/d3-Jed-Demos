@@ -26,7 +26,7 @@ levelValueFactos.set(2, 100);
 levelValueFactos.set(3, 10);
 
 // At the top of your file with other globals
-let idCounter = 0;
+let idCounter = 1;
 
 // When you need a new ID
 function generateId() {
@@ -35,6 +35,9 @@ function generateId() {
 
 // circles map. Will contain id: number as key, and circle element as value
 const circlesMap = new Map();
+
+// parent child id map
+const parentChildMap = new Map();
 
 // Create SVG for the scatter plot
 const svg = d3.select('#scatter-plot')
@@ -128,43 +131,51 @@ function setCarData(data) {
 
   transformData(data, transformedData);
 
+  console.log(parentChildMap);
+
   return transformedData;
 }
 
-function transformData(parent, containerData, fillColorIndex = 0, x1 = 0, y1 = 0, x2 = widthScale, y2 = heightScale) {
-  // Get circle coordinates for level - 1 cars
-  const circleCoordsLevel1 = getCircleCoords(x1, y1, x2, y2);
+function transformData(rootArray, containerData, rootId = 0, fillColorIndex = 0, x1 = 0, y1 = 0, x2 = widthScale, y2 = heightScale) {
+    // Get circle coordinates for level - 1 cars
+    const circleCoords = getCircleCoords(x1, y1, x2, y2);
 
-  // sort data by level first (descending order)
-  parent.sort((a, b) => b.weight - a.weight);
+    // sort data by level first (descending order)
+    rootArray.sort((a, b) => b.weight - a.weight);
 
-  // How can I only take the top 9 items?
-  parent = parent.slice(0, circleCoordsLevel1.length);
+    // How can I only take the top 9 items?s
+    rootArray = rootArray.slice(0, circleCoords.length);
 
-  parent.map((child, i) => {
-    child.id = generateId();
+    rootArray.map((parent, i) => {
+        parent.id = generateId();
+        
+        // if rootId exists as key in parentChildMap, add this parent id to its array
+        if (parentChildMap.has(rootId)) {
+          parentChildMap.get(rootId).push(parent.id);
+        }
 
-    child.cx = circleCoordsLevel1[i % circleCoordsLevel1.length].cx;
-    child.cy = circleCoordsLevel1[i % circleCoordsLevel1.length].cy;
-    child.r = child.weight * levelValueFactos.get(child.level);
-    child.fill = fillColors[fillColorIndex % fillColors.length];
-    child.boundingBox = circleCoordsLevel1[i % circleCoordsLevel1.length].boundingBox;
-    // level1Data.children = data.filter(d => d.parent === level1Data.name);
+        parent.cx = circleCoords[i % circleCoords.length].cx;
+        parent.cy = circleCoords[i % circleCoords.length].cy;
+        parent.r = parent.weight * levelValueFactos.get(parent.level);
+        parent.fill = fillColors[fillColorIndex % fillColors.length];
+        parent.boundingBox = circleCoords[i % circleCoords.length].boundingBox;
+        
+        containerData.push(parent);
 
-    containerData.push(child);
-
-    if (child.children) {
-      transformData(
-        child.children, 
-        containerData, 
-        fillColorIndex + 1, 
-        child.boundingBox.x1, 
-        child.boundingBox.y1, 
-        child.boundingBox.x2, 
-        child.boundingBox.y2
-      );
-    }
-  });
+        if (parent.children) {
+            parentChildMap.set(parent.id, []);
+            transformData(
+                parent.children,
+                containerData,
+                parent.id,
+                fillColorIndex + 1,
+                parent.boundingBox.x1,
+                parent.boundingBox.y1,
+                parent.boundingBox.x2,
+                parent.boundingBox.y2
+            );
+        }
+    });
 
   return containerData;
 }
@@ -310,7 +321,7 @@ function updateScatterPlot(data) {
     y.domain([0, heightScale]);
 
     // Create cards for each car data point as SVG elements
-    const cardGroup = g.selectAll('circle').data(data, d => d.name);
+    const cardGroup = g.selectAll('circle').data(data, d => d.id);
 
     // Handle elements that need to be removed
     cardGroup.exit()
