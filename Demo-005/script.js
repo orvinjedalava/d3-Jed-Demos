@@ -7,6 +7,11 @@ const animationDuration = 750;
 const widthScale = 90000;
 const heightScale = 90000;
 
+// Define card dimensions
+const cardWidth = 80;
+const cardHeight = 100;
+const imageHeight = 60;
+
 // Fill Colors
 const fillColors = ["lightgreen", "blue", "red", "lightgoldenrodyellow", "lightpink", "lightgray"];
 
@@ -469,19 +474,25 @@ function updateScatterPlot(data) {
     // Update existing elements' positions
     cardGroup
     .transition(t)
-        .attr("r", d => y(d.r))
-        .attr("cx", d => x(d.cx))
-        .attr("cy", d => y(d.cy))
+        .attr('transform', (d) => {
+            const xPos = x(d.cx) - cardWidth / 2;
+            const yPos = y(d.cy) - cardHeight / 2;
+            return `translate(${xPos}, ${yPos})`;
+        })
+
         .style('opacity', d => isVisible(d.id) ? 1 : 0);
 
     // Handle new elements - append both the group and the rect to new elements only
-    const enterSelection = cardGroup.enter().append('circle')
-        .attr("r", d => y(d.r))
-        .attr("cx", d => x(d.cx))
-        .attr("cy", d => y(d.cy))
+    const enterSelection = cardGroup.enter().append('g')
+        .attr('class', 'card-group')
+        .attr('transform', (d) => {
+            const xPos = x(d.cx) - cardWidth / 2;
+            const yPos = y(d.cy) - cardHeight / 2;
+            return `translate(${xPos}, ${yPos})`;
+        })
+
         .attr("fill", (d, i) => d.fill)
         .style('opacity', 0)
-        // .style('cursor', d => isVisible(d.id) ? 'pointer' : 'auto')
         .style('cursor', 'pointer')
         .style('display', d => isVisible(d.id) ? 'block' : 'none')
         .style('pointer-events', d => isVisible(d.id) ? 'all' : 'none') // Disable pointer events for non-visible circles
@@ -525,8 +536,34 @@ function updateScatterPlot(data) {
                 }
             }
 
-        })
-        .transition(t)
+        });
+        
+
+    // Create card background
+    enterSelection.append('rect')
+        .attr('class', 'card-rect')
+        .attr('width', cardWidth)
+        .attr('height', cardHeight)
+        .attr('fill', (d, i) => d3.schemeCategory10[i % 10] + '20') // Light version of the color
+        .attr('stroke', (d, i) => d3.schemeCategory10[i % 10]);
+
+    // Add the image using SVG image element
+    enterSelection.append('image')
+        .attr('href', 'images/BMW.jpg')
+        .attr('x', 0)
+        .attr('y', 0)
+        .attr('width', cardWidth)
+        .attr('height', imageHeight)
+        .attr('preserveAspectRatio', 'xMidYMid slice');
+
+    // Add car make text
+    enterSelection.append('text')
+        .attr('class', 'card-text')
+        .attr('x', cardWidth / 2)
+        .attr('y', imageHeight + 15)
+        .text((d) => d.name);
+
+    enterSelection.transition(t)
           .style('opacity', d => isVisible(d.id) ? 1 : 0);
 
     // Handle background click - zoom out
