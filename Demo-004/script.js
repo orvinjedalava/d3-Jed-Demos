@@ -432,27 +432,32 @@ function updateScatterPlot(data) {
             // Prevent triggering background click
             event.stopPropagation();
 
-            const latestStackCircle = activeCircleStack.length > 0 ? activeCircleStack[activeCircleStack.length - 1] : null;
-
-            // Clicked the already active circle, do nothing
-            if (latestStackCircle === this) {
+            if (!rootToLeavesMap.has(d.id) || rootToLeavesMap.get(d.id).length === 0) {
+                // No children, do nothing
                 return;
-            }
-
-            // Zoom to clicked circle if stack is empty.
-            if (!latestStackCircle) {
-                zoomToChild(this);
             } else {
-                const lastDataCircle = d3.select(latestStackCircle).datum();
+                const latestStackCircle = activeCircleStack.length > 0 ? activeCircleStack[activeCircleStack.length - 1] : null;
 
-                if (d.level <= lastDataCircle.level) {
-                  zoomToParent();
+                // Clicked the already active circle, do nothing
+                if (latestStackCircle === this) {
+                    return;
                 }
-                else if (d.level === lastDataCircle.level) {
-                  zoomToSibling(this);
-                }
-                else {
-                  zoomToChild(this);
+
+                // Zoom to clicked circle if stack is empty.
+                if (!latestStackCircle) {
+                    zoomToChild(this);
+                } else {
+                    const lastDataCircle = d3.select(latestStackCircle).datum();
+
+                    if (d.level <= lastDataCircle.level) {
+                      zoomToParent();
+                    }
+                    else if (d.level === lastDataCircle.level) {
+                      zoomToSibling(this);
+                    }
+                    else {
+                      zoomToChild(this);
+                    }
                 }
             }
 
