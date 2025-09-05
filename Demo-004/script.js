@@ -201,6 +201,23 @@ function transformData(leaves, containerData, rootId = 0, fillColorIndex = 0, x1
   return containerData;
 }
 
+// With this recursive function:
+function findNodeByName(nodes, name) {
+    // Check in the current level
+    const found = nodes.find(node => node.name === name);
+    if (found) return found;
+    
+    // If not found, check in children
+    for (const node of nodes) {
+        if (node.children && node.children.length > 0) {
+            const foundInChildren = findNodeByName(node.children, name);
+            if (foundInChildren) return foundInChildren;
+        }
+    }
+    
+    return null;
+}
+
 function addCar() {
     // Get the car weight from the input field
     const carWeightInput = document.getElementById('car-weight');
@@ -216,7 +233,30 @@ function addCar() {
             name: carName + carWeight,
             level: 1
         };
-        jsonData.push(newCar);
+        const currentName = getLatestLeafName();
+
+        // get the node from jsonData that matches currentName
+        if (currentName) {
+            // make sure to search even the children nodes
+            const parentNode = findNodeByName(jsonData, currentName);
+            if (parentNode) {
+                if (!parentNode.children) {
+                    parentNode.children = [];
+                }
+                newCar.name = currentName + '-' + newCar.name;
+                newCar.level = parentNode.level + 1;
+                parentNode.children.push(newCar);
+            }
+            else {
+                // If parent node not found, add to root
+                jsonData.push(newCar);
+            }
+        }
+        else {
+            // If no current leaf or parent node not found, add to root
+            jsonData.push(newCar);
+        }
+        
         assignIds(jsonData);
         updateVisualization(setCircleData(jsonData));
     }
@@ -335,9 +375,13 @@ function zoomToChild(circle) {
   zoomTo(circle);
 }
 
+function getLatestLeaf() {
+    return activeCircleStack.length > 0 ? activeCircleStack[activeCircleStack.length - 1] : null;
+}
+
 function getLatestLeafId() {
     
-    const circle = activeCircleStack.length > 0 ? activeCircleStack[activeCircleStack.length - 1] : null;
+    const circle = getLatestLeaf();
 
     if (circle) {
       const circleData = d3.select(circle).datum();
@@ -345,6 +389,17 @@ function getLatestLeafId() {
     }
 
     return 0;
+}
+
+function getLatestLeafName() {
+    const circle = getLatestLeaf();
+
+    if (circle) {
+      const circleData = d3.select(circle).datum();
+      return circleData.name;
+    }
+
+    return null;
 }
 
 function isVisible(leafId) {
