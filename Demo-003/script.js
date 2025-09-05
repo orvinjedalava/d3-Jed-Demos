@@ -25,6 +25,17 @@ levelValueFactos.set(1, 1000);
 levelValueFactos.set(2, 100);
 levelValueFactos.set(3, 10);
 
+// At the top of your file with other globals
+let idCounter = 0;
+
+// When you need a new ID
+function generateId() {
+  return idCounter++;
+}
+
+// circles map. Will contain id: number as key, and circle element as value
+const circlesMap = new Map();
+
 // Create SVG for the scatter plot
 const svg = d3.select('#scatter-plot')
     .append('svg')
@@ -131,6 +142,8 @@ function transformData(parent, containerData, fillColorIndex = 0, x1 = 0, y1 = 0
   parent = parent.slice(0, circleCoordsLevel1.length);
 
   parent.map((child, i) => {
+    child.id = generateId();
+
     child.cx = circleCoordsLevel1[i % circleCoordsLevel1.length].cx;
     child.cy = circleCoordsLevel1[i % circleCoordsLevel1.length].cy;
     child.r = child.weight * levelValueFactos.get(child.level);
@@ -181,8 +194,6 @@ function removeCar() {
     const carIndexInput = document.getElementById('car-index');
     const carIndex = parseInt(carIndexInput.value);
 
-    console.log(carIndex);
-
     if (isNaN(carIndex) || !carData[carIndex]) {
        return;
     }
@@ -206,8 +217,6 @@ function removeActiveCircleStyling() {
 }
 
 function zoomTo(circle) {
-    console.log("Zooming to circle:", circle);
-
     // Remove previous selection styling
     removeActiveCircleStyling();
 
@@ -287,6 +296,12 @@ function zoomToChild(circle) {
   zoomTo(circle);
 }
 
+function isLatest(circle) {
+    return activeCircleStack.length > 0 && activeCircleStack[activeCircleStack.length - 1] === circle;
+}
+
+const circleMap = new WeakMap();
+
 function updateScatterPlot(data) {
     const t = d3.transition().duration(animationDuration);
 
@@ -298,10 +313,17 @@ function updateScatterPlot(data) {
     const cardGroup = g.selectAll('circle').data(data, d => d.name);
 
     // Handle elements that need to be removed
-    cardGroup.exit().transition(t).style('opacity', 0).remove();
+    cardGroup.exit()
+    .each(function(d) {
+        // Remove the reference from the map when a circle is removed
+        circlesMap.delete(d.id);
+    })
+    .transition(t)
+      .style('opacity', 0).remove();
 
     // Update existing elements' positions
-    cardGroup.transition(t)
+    cardGroup
+    .transition(t)
         .attr("r", d => y(d.r))
         .attr("cx", d => x(d.cx))
         .attr("cy", d => y(d.cy))
@@ -310,13 +332,17 @@ function updateScatterPlot(data) {
     // Handle new elements - append both the group and the rect to new elements only
     const enterSelection = cardGroup.enter().append('circle')
         .style('opacity', 0)
-        // .join('circle')
         .attr("r", d => y(d.r))
         .attr("cx", d => x(d.cx))
         .attr("cy", d => y(d.cy))
         .attr("fill", (d, i) => d.fill)
         .on("mouseover", function() { d3.select(this).attr("stroke", "#000"); })
         .on("mouseout", function() { d3.select(this).attr("stroke", null); })
+        .each(function(d) {
+            // Store reference to this circle element in the circlesMap
+            // using the data item's id as the key
+            circlesMap.set(d.id, this);
+        })
         .on('click', function(event, d) {
             // Prevent triggering background click
             event.stopPropagation();
