@@ -21,6 +21,9 @@ let activeCircle = null;
 // Define active circles stack
 const activeCircleStack = [];
 
+// define if circle is expanded
+let isCircleExpanded = false;
+
 // Define data holder
 let jsonData = [];
 
@@ -124,17 +127,18 @@ function getCircleCoords(paramX1, paramY1, paramX2, paramY2) {
     const cardHeight = boundingHeight / 6;
     const imageHeight = cardHeight * 0.6;
     const fontSize = cardHeight * 0.10;
+    const zoomBoundingBox = { x1: paramX1 + boundingWidth * 0.2, y1: paramY1 + boundingHeight * 0.2, x2: paramX2 - boundingWidth * 0.2, y2: paramY2 - boundingHeight * 0.2 };
 
     return [
-        { cx: midX, cy: midY, fontSize: fontSize, cardWidth: cardWidth, cardHeight: cardHeight, imageHeight: imageHeight, boundingBox: { x1: boundingWidth / 6 * 2 + paramX1, y1: boundingHeight / 6 * 2 + paramY1, x2: boundingWidth / 6 * 4 + paramX1, y2: boundingHeight / 6 * 4 + paramY1 } },
-        { cx: leftX, cy: topY, fontSize: fontSize, cardWidth: cardWidth, cardHeight: cardHeight, imageHeight: imageHeight, boundingBox: { x1: paramX1, y1: paramY1, x2: boundingWidth / 6 * 2 + paramX1, y2: boundingHeight / 6 * 2 + paramY1 } },
-        { cx: rightX, cy: bottomY, fontSize: fontSize, cardWidth: cardWidth, cardHeight: cardHeight, imageHeight: imageHeight, boundingBox: { x1: boundingWidth / 6 * 4 + paramX1, y1: boundingHeight / 6 * 4 + paramY1, x2: paramX2, y2: paramY2 } },
-        { cx: leftX, cy: bottomY, fontSize: fontSize, cardWidth: cardWidth, cardHeight: cardHeight, imageHeight: imageHeight, boundingBox: { x1: paramX1, y1: boundingHeight / 6 * 4 + paramY1, x2: boundingWidth / 6 * 2 + paramX1, y2: paramY2 } },
-        { cx: rightX, cy: topY, fontSize: fontSize, cardWidth: cardWidth, cardHeight: cardHeight, imageHeight: imageHeight, boundingBox: { x1: boundingWidth / 6 * 4 + paramX1, y1: paramY1, x2: paramX2, y2: boundingHeight / 6 * 2 + paramY1 } },
-        { cx: leftX, cy: midY, fontSize: fontSize, cardWidth: cardWidth, cardHeight: cardHeight, imageHeight: imageHeight, boundingBox: { x1: paramX1, y1: boundingHeight / 6 * 2 + paramY1, x2: boundingWidth / 6 * 2 + paramX1, y2: boundingHeight / 6 * 4 + paramY1 } },
-        { cx: rightX, cy: midY, fontSize: fontSize, cardWidth: cardWidth, cardHeight: cardHeight, imageHeight: imageHeight, boundingBox: { x1: boundingWidth / 6 * 4 + paramX1, y1: boundingHeight / 6 * 2 + paramY1, x2: paramX2, y2: boundingHeight / 6 * 4 + paramY1 } },
-        { cx: midX, cy: topY, fontSize: fontSize, cardWidth: cardWidth, cardHeight: cardHeight, imageHeight: imageHeight, boundingBox: { x1: boundingWidth / 6 * 2 + paramX1, y1: paramY1, x2: boundingWidth / 6 * 4 + paramX1, y2: boundingHeight / 6 * 2 + paramY1 } },
-        { cx: midX, cy: bottomY, fontSize: fontSize, cardWidth: cardWidth, cardHeight: cardHeight, imageHeight: imageHeight, boundingBox: { x1: boundingWidth / 6 * 2 + paramX1, y1: boundingHeight / 6 * 4 + paramY1, x2: boundingWidth / 6 * 4 + paramX1, y2: paramY2 } }
+        { cx: midX, cy: midY, zoomBoundingBox: zoomBoundingBox, fontSize: fontSize, cardWidth: cardWidth, cardHeight: cardHeight, imageHeight: imageHeight, boundingBox: { x1: boundingWidth / 6 * 2 + paramX1, y1: boundingHeight / 6 * 2 + paramY1, x2: boundingWidth / 6 * 4 + paramX1, y2: boundingHeight / 6 * 4 + paramY1 } },
+        { cx: leftX, cy: topY, zoomBoundingBox: zoomBoundingBox, fontSize: fontSize, cardWidth: cardWidth, cardHeight: cardHeight, imageHeight: imageHeight, boundingBox: { x1: paramX1, y1: paramY1, x2: boundingWidth / 6 * 2 + paramX1, y2: boundingHeight / 6 * 2 + paramY1 } },
+        { cx: rightX, cy: bottomY, zoomBoundingBox: zoomBoundingBox, fontSize: fontSize, cardWidth: cardWidth, cardHeight: cardHeight, imageHeight: imageHeight, boundingBox: { x1: boundingWidth / 6 * 4 + paramX1, y1: boundingHeight / 6 * 4 + paramY1, x2: paramX2, y2: paramY2 } },
+        { cx: leftX, cy: bottomY, zoomBoundingBox: zoomBoundingBox, fontSize: fontSize, cardWidth: cardWidth, cardHeight: cardHeight, imageHeight: imageHeight, boundingBox: { x1: paramX1, y1: boundingHeight / 6 * 4 + paramY1, x2: boundingWidth / 6 * 2 + paramX1, y2: paramY2 } },
+        { cx: rightX, cy: topY, zoomBoundingBox: zoomBoundingBox, fontSize: fontSize, cardWidth: cardWidth, cardHeight: cardHeight, imageHeight: imageHeight, boundingBox: { x1: boundingWidth / 6 * 4 + paramX1, y1: paramY1, x2: paramX2, y2: boundingHeight / 6 * 2 + paramY1 } },
+        { cx: leftX, cy: midY, zoomBoundingBox: zoomBoundingBox, fontSize: fontSize, cardWidth: cardWidth, cardHeight: cardHeight, imageHeight: imageHeight, boundingBox: { x1: paramX1, y1: boundingHeight / 6 * 2 + paramY1, x2: boundingWidth / 6 * 2 + paramX1, y2: boundingHeight / 6 * 4 + paramY1 } },
+        { cx: rightX, cy: midY, zoomBoundingBox: zoomBoundingBox, fontSize: fontSize, cardWidth: cardWidth, cardHeight: cardHeight, imageHeight: imageHeight, boundingBox: { x1: boundingWidth / 6 * 4 + paramX1, y1: boundingHeight / 6 * 2 + paramY1, x2: paramX2, y2: boundingHeight / 6 * 4 + paramY1 } },
+        { cx: midX, cy: topY, zoomBoundingBox: zoomBoundingBox, fontSize: fontSize, cardWidth: cardWidth, cardHeight: cardHeight, imageHeight: imageHeight, boundingBox: { x1: boundingWidth / 6 * 2 + paramX1, y1: paramY1, x2: boundingWidth / 6 * 4 + paramX1, y2: boundingHeight / 6 * 2 + paramY1 } },
+        { cx: midX, cy: bottomY, zoomBoundingBox: zoomBoundingBox, fontSize: fontSize, cardWidth: cardWidth, cardHeight: cardHeight, imageHeight: imageHeight, boundingBox: { x1: boundingWidth / 6 * 2 + paramX1, y1: boundingHeight / 6 * 4 + paramY1, x2: boundingWidth / 6 * 4 + paramX1, y2: paramY2 } }
     ]
 }
 
@@ -184,6 +188,7 @@ function transformData(leaves, containerData, rootId = 0, fillColorIndex = 0, x1
         leaf.cardHeight = circleCoords[i % circleCoords.length].cardHeight;
         leaf.imageHeight = circleCoords[i % circleCoords.length].imageHeight;
         leaf.fontSize = circleCoords[i % circleCoords.length].fontSize;
+        leaf.zoomBoundingBox = circleCoords[i % circleCoords.length].zoomBoundingBox;
         
         containerData.push(leaf);
 
@@ -309,6 +314,7 @@ function zoomTo(circle) {
     // Calculate the transform needed to center and zoom on this circle
     let transform = initialTransform;
     let activeId = 0; // default to root
+    isCircleExpanded = false;
 
     if (circle) {
       const circleData = d3.select(circle).datum();
@@ -423,6 +429,14 @@ function refreshCirclesVisibility(rootId) {
   const t = d3.transition().duration(animationDuration);
 
   circlesMap.forEach((circleElement, id) => {
+      d3.select(circleElement)
+        .transition(t)
+          .attr('transform', (d) => {
+                const xPos = x(d.cx) - x(d.cardWidth) / 2;
+                const yPos = y(d.cy) - y(d.cardHeight) / 2;
+                return `translate(${xPos}, ${yPos})`;
+          });
+
       if (leafToRootMap.has(id) && leafToRootMap.get(id) === rootId) {
           d3.select(circleElement)
           .style('display', 'block')
@@ -436,6 +450,61 @@ function refreshCirclesVisibility(rootId) {
           .transition(t)
             .style('opacity', 0);
       }
+  });
+}
+
+function expandCircle(leafId) {
+  console.log('Expanding circle id: ' + leafId);
+    // set default transition
+    const t = d3.transition().duration(animationDuration);
+
+    const rootId = leafToRootMap.get(leafId);
+
+    circlesMap.forEach((circleElement, id) => {
+      if (leafToRootMap.has(id) && leafToRootMap.get(id) === rootId) {
+          if (leafId === id) {
+              const leafSvg = d3.select(circleElement)
+                .style('display', 'block')
+                .style('pointer-events', 'all');
+              
+
+              // // Create card background
+              // leafSvg.select('.card-rect')
+              //   .transition(t)
+              //     .attr('width', d => x(d.cardWidth))
+              //     .attr('height', d => y(d.cardHeight));
+
+              // // Add the image using SVG image element
+              // leafSvg.select('image')
+              //   .transition(t)  
+              //     .attr('width', d => x(d.cardWidth))
+              //     .attr('height', d => y(d.imageHeight))
+
+              // // Add car make text
+              // leafSvg.select('.card-text')
+              //   .transition(t)
+              //     .attr('x', d => x(d.cardWidth) / 2)
+              //     .attr('y', d => y(d.imageHeight) + y(d.cardHeight * 0.25));
+
+              leafSvg
+                .transition(t)
+                  .style('opacity', 1)
+                  .attr('transform', (d) => {
+                        const xPos = x(d.zoomBoundingBox.x1);
+                        const yPos = y(d.zoomBoundingBox.y1);
+                        return `translate(${xPos}, ${yPos})`;
+                  });
+          }
+          else
+          {
+              d3.select(circleElement)
+                .style('display', 'none')
+                .style('pointer-events', 'none')
+                .transition(t)
+                  .style('opacity', 0.4);
+          }
+      }
+      
   });
 }
 
@@ -490,6 +559,7 @@ function updateScatterPlot(data) {
         })
 
         .attr("fill", (d, i) => d.fill)
+        .style('overflow', 'hidden')
         .style('opacity', 0)
         .style('cursor', 'pointer')
         .style('display', d => isVisible(d.id) ? 'block' : 'none')
@@ -507,8 +577,11 @@ function updateScatterPlot(data) {
 
             if (!rootToLeavesMap.has(d.id) || rootToLeavesMap.get(d.id).length === 0) {
                 // No children, do nothing
+                isCircleExpanded = true;
+                expandCircle(d.id);
                 return;
             } else {
+
                 const latestStackCircle = activeCircleStack.length > 0 ? activeCircleStack[activeCircleStack.length - 1] : null;
 
                 // Clicked the already active circle, do nothing
@@ -538,7 +611,7 @@ function updateScatterPlot(data) {
         
 
     // Create card background
-    enterSelection.append('rect')
+    const rectSvg = enterSelection.append('rect')
         .attr('class', 'card-rect')
         .attr('width', d => x(d.cardWidth))
         .attr('height', d => y(d.cardHeight))
@@ -548,8 +621,8 @@ function updateScatterPlot(data) {
     // Add the image using SVG image element
     enterSelection.append('image')
         .attr('href', 'images/BMW.jpg')
-        .attr('x', 0)
-        .attr('y', 0)
+        // .attr('x', 0)
+        // .attr('y', 0)
         .attr('width', d => x(d.cardWidth))
         .attr('height', d => y(d.imageHeight))
         .attr('preserveAspectRatio', 'xMidYMid slice');
@@ -564,12 +637,37 @@ function updateScatterPlot(data) {
         .style('dominant-baseline', 'middle')
         .text((d) => d.name);
 
+    // // // Add car make text
+    // enterSelection.append('rect')
+    //     .attr('class', 'card-rect')
+    //     .attr('x', 0)
+    //     .attr('y', d => y(d.imageHeight) + y(d.cardHeight * 0.25) + y(d.cardHeight * 0.25))
+    //     .attr('width', d => x(d.cardWidth))
+    //     .attr('height', d => y(d.imageHeight))
+    //     .attr('fill', 'gray') // Light version of the color
+    //     .attr('stroke', 'black')
+    //     .on('click', function(event, d) {
+    //       console.log('Card clicked: ' + d.name);
+    //     }).append('text')
+    //       .attr('class', 'card-text')
+    //       .attr('x', d => x(d.cardWidth) / 2)
+    //       .attr('y', d => y(d.imageHeight) / 2)
+    //       .style('font-size', d => y(d.fontSize))
+    //       .style('text-anchor', 'middle')
+    //       .style('dominant-baseline', 'middle')
+    //       .text('Press Me');
+
     enterSelection.transition(t)
           .style('opacity', d => isVisible(d.id) ? 1 : 0);
 
     // Handle background click - zoom out
     background.on("click", function() {
-        zoomToParent();
+        if (isCircleExpanded) {
+            zoomToLatest();
+        }
+        else {
+            zoomToParent();
+        }
     });
 }
 
