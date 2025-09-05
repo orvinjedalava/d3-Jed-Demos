@@ -16,23 +16,23 @@ let carData = [];
 function getCircleCoords(paramX1, paramY1, paramX2, paramY2) {
     const boundingWidth = paramX2 - paramX1;
     const boundingHeight = paramY2 - paramY1;
-    const leftX = boundingWidth / 6;
-    const topY = boundingHeight / 6;
-    const rightX = boundingWidth / 6 * 5;
-    const bottomY = boundingHeight / 6 * 5;
-    const midX = boundingWidth / 6 * 3;
-    const midY = boundingHeight /6 * 3;
+    const leftX = boundingWidth / 6 + paramX1;
+    const topY = boundingHeight / 6 + paramY1;
+    const rightX = boundingWidth / 6 * 5 + paramX1;
+    const bottomY = boundingHeight / 6 * 5 + paramY1;
+    const midX = boundingWidth / 6 * 3 + paramX1;
+    const midY = boundingHeight / 6 * 3 + paramY1;
 
     return [
-        { cx: midX, cy: midY, boundingBox: { x1: boundingWidth / 6 * 2, y1: boundingHeight / 6 * 2, x2: boundingWidth / 6 * 4, y2: boundingHeight / 6 * 4 } },
-        { cx: leftX, cy: topY, boundingBox: { x1: paramX1, y1: paramY1, x2: boundingWidth / 6 * 2, y2: boundingHeight / 6 * 2 } },
-        { cx: rightX, cy: bottomY, boundingBox: { x1: boundingWidth / 6 * 4, y1: boundingHeight / 6 * 4, x2: paramX2, y2: paramY2 } },
-        { cx: leftX, cy: bottomY, boundingBox: { x1: paramX1, y1: boundingHeight / 6 * 4, x2: boundingWidth / 6 * 2, y2: paramY2 } },
-        { cx: rightX, cy: topY, boundingBox: { x1: boundingWidth / 6 * 4, y1: paramY1, x2: paramX2, y2: boundingHeight / 6 * 2 } },
-        { cx: leftX, cy: midY, boundingBox: { x1: paramX1, y1: boundingHeight / 6 * 2, x2: boundingWidth / 6 * 2, y2: boundingHeight / 6 * 4 } },
-        { cx: rightX, cy: midY, boundingBox: { x1: boundingWidth / 6 * 4, y1: boundingHeight / 6 * 2, x2: paramX2, y2: boundingHeight / 6 * 4 } },
-        { cx: midX, cy: topY, boundingBox: { x1: boundingWidth / 6 * 2, y1: paramY1, x2: boundingWidth / 6 * 4, y2: boundingHeight / 6 * 2 } },
-        { cx: midX, cy: bottomY, boundingBox: { x1: boundingWidth / 6 * 2, y1: boundingHeight / 6 * 4, x2: boundingWidth / 6 * 4, y2: paramY2 } }
+        { cx: midX, cy: midY, boundingBox: { x1: boundingWidth / 6 * 2 + paramX1, y1: boundingHeight / 6 * 2 + paramY1, x2: boundingWidth / 6 * 4 + paramX1, y2: boundingHeight / 6 * 4 + paramY1 } },
+        { cx: leftX, cy: topY, boundingBox: { x1: paramX1, y1: paramY1, x2: boundingWidth / 6 * 2 + paramX1, y2: boundingHeight / 6 * 2 + paramY1 } },
+        { cx: rightX, cy: bottomY, boundingBox: { x1: boundingWidth / 6 * 4 + paramX1, y1: boundingHeight / 6 * 4 + paramY1, x2: paramX2, y2: paramY2 } },
+        { cx: leftX, cy: bottomY, boundingBox: { x1: paramX1, y1: boundingHeight / 6 * 4 + paramY1, x2: boundingWidth / 6 * 2 + paramX1, y2: paramY2 } },
+        { cx: rightX, cy: topY, boundingBox: { x1: boundingWidth / 6 * 4 + paramX1, y1: paramY1, x2: paramX2, y2: boundingHeight / 6 * 2 + paramY1 } },
+        { cx: leftX, cy: midY, boundingBox: { x1: paramX1, y1: boundingHeight / 6 * 2 + paramY1, x2: boundingWidth / 6 * 2 + paramX1, y2: boundingHeight / 6 * 4 + paramY1 } },
+        { cx: rightX, cy: midY, boundingBox: { x1: boundingWidth / 6 * 4 + paramX1, y1: boundingHeight / 6 * 2 + paramY1, x2: paramX2, y2: boundingHeight / 6 * 4 + paramY1 } },
+        { cx: midX, cy: topY, boundingBox: { x1: boundingWidth / 6 * 2 + paramX1, y1: paramY1, x2: boundingWidth / 6 * 4 + paramX1, y2: boundingHeight / 6 * 2 + paramY1 } },
+        { cx: midX, cy: bottomY, boundingBox: { x1: boundingWidth / 6 * 2 + paramX1, y1: boundingHeight / 6 * 4 + paramY1, x2: boundingWidth / 6 * 4 + paramX1, y2: paramY2 } }
     ]
 }
 
@@ -98,9 +98,12 @@ document.addEventListener('DOMContentLoaded', function() {
 
     // Load initial data and render visualization
     d3.json('data/circles.json').then(function(data) {
-        carData = setCarData(data);
+      // carData = data;
+        // carData = setCarData(data);
+        carData = data;
+        const circlesData = transformData(carData);
         
-        updateVisualization(carData);
+        updateVisualization(circlesData);
     });
 });
 
@@ -124,6 +127,57 @@ function setCarData(data) {
   return data;
 }
 
+function transformData(data) {
+  console.log(data);
+  let transformedData = [];
+
+  // Get circle coordinates for level - 1 cars
+  const circleCoordsLevel1 = getCircleCoords(0, 0, widthScale, heightScale);
+
+  // sort data by level first (descending order)
+  data.sort((a, b) => b.weight - a.weight);
+
+  // How can I only take the top 9 items?
+  data = data.slice(0, circleCoordsLevel1.length);
+
+  data.map((level1Data, i) => {
+    level1Data.cx = circleCoordsLevel1[i % circleCoordsLevel1.length].cx;
+    level1Data.cy = circleCoordsLevel1[i % circleCoordsLevel1.length].cy;
+    level1Data.r = level1Data.weight * levelValueFactos.get(level1Data.level);
+    level1Data.fill = "lightgreen";
+    level1Data.boundingBox = circleCoordsLevel1[i % circleCoordsLevel1.length].boundingBox;
+    // level1Data.children = data.filter(d => d.parent === level1Data.name);
+
+    transformedData.push(level1Data);
+
+    if (level1Data.children) {
+      const circleCoordsLevel2 = getCircleCoords(
+          level1Data.boundingBox.x1, 
+          level1Data.boundingBox.y1, 
+          level1Data.boundingBox.x2, 
+          level1Data.boundingBox.y2
+        );
+
+      level1Data.children.sort((a, b) => b.weight - a.weight);
+
+      // How can I only take the top 9 items?
+      level1Data.children = level1Data.children.slice(0, circleCoordsLevel2.length);
+
+      level1Data.children.map((level2Data, j) => {
+        level2Data.cx = circleCoordsLevel2[j % circleCoordsLevel2.length].cx;
+        level2Data.cy = circleCoordsLevel2[j % circleCoordsLevel2.length].cy;
+        level2Data.r = level2Data.weight * levelValueFactos.get(level2Data.level);
+        level2Data.fill = "blue";
+        level2Data.boundingBox = circleCoordsLevel2[j % circleCoordsLevel2.length].boundingBox;
+
+        transformedData.push(level2Data);
+      });
+    }
+  });
+
+  return transformedData;
+}
+
 function addCar() {
     // Get the car weight from the input field
     const carWeightInput = document.getElementById('car-weight');
@@ -140,8 +194,8 @@ function addCar() {
             level: 1
         };
         carData.push(newCar);
-        carData = setCarData(carData);
-        updateVisualization(carData);
+        const circlesData = transformData(carData);
+        updateVisualization(circlesData);
     }
 }
 
@@ -157,8 +211,8 @@ function removeCar() {
 
     // remove a car by index
     carData.splice(carIndex, 1);
-    carData = setCarData(carData);
-    updateVisualization(carData);
+    const circlesData = transformData(carData);
+    updateVisualization(circlesData);
 }
 
 
@@ -194,7 +248,7 @@ function updateScatterPlot(data) {
         .attr("r", d => y(d.r))
         .attr("cx", d => x(d.cx))
         .attr("cy", d => y(d.cy))
-        .attr("fill", (d, i) => "lightgreen")
+        .attr("fill", (d, i) => d.fill)
         .on("mouseover", function() { d3.select(this).attr("stroke", "#000"); })
         .on("mouseout", function() { d3.select(this).attr("stroke", null); })
         .on('click', function(event, d) {
@@ -210,14 +264,44 @@ function updateScatterPlot(data) {
             d3.select(this).classed("selected", true);
             activeCircle = this;
 
-            // Calculate the transform needed to center and zoom on this circle
-            // NOTE: set scale to max of 8.
-            const scale = Math.min(width, height) / (y(d.r)) * (1 - (Math.min(width, height) / Math.max(width, height)));
-            const translateX = width / 2 - scale * x(d.cx);
-            const translateY = height / 2 - scale * y(d.cy);
+            // // Calculate the transform needed to center and zoom on this circle
+            // // NOTE: set scale to max of 8.
+            // const scale = Math.min(width, height) / (y(d.r)) * (1 - (Math.min(width, height) / Math.max(width, height)));
+            // const translateX = width / 2 - scale * x(d.cx);
+            // const translateY = height / 2 - scale * y(d.cy);
+            // const transform = d3.zoomIdentity.translate(translateX, translateY).scale(scale);
+
+            // // Animate the zoom using interpolateZoom
+            // svg.transition()
+            //     .duration(750)
+            //     .call(zoom.transform, transform);
+
+            // Calculate the bounding box in screen space
+            const x1 = x(d.boundingBox.x1);
+            const y1 = y(d.boundingBox.y1);
+            const x2 = x(d.boundingBox.x2);
+            const y2 = y(d.boundingBox.y2);
+
+            // Calculate the width and height of the bounding box in screen space
+            const boxWidth = x2 - x1;
+            const boxHeight = y2 - y1;
+
+            // Calculate the scale needed to fit the bounding box in the viewport
+            // Adding some padding (0.9) to avoid zooming right to the edges
+            const scaleX = (width / boxWidth) * 0.9;
+            const scaleY = (height / boxHeight) * 0.9;
+            const scale = Math.min(scaleX, scaleY); // Use the smaller scale to ensure the entire box is visible
+
+            // Calculate the center of the bounding box
+            const boxCenterX = x1 + boxWidth / 2;
+            const boxCenterY = y1 + boxHeight / 2;
+
+            // Calculate the transform needed to center and zoom on the bounding box
+            const translateX = width / 2 - scale * boxCenterX;
+            const translateY = height / 2 - scale * boxCenterY;
             const transform = d3.zoomIdentity.translate(translateX, translateY).scale(scale);
 
-            // Animate the zoom using interpolateZoom
+            // Animate the zoom using the calculated transform
             svg.transition()
                 .duration(750)
                 .call(zoom.transform, transform);

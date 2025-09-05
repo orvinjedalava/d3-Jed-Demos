@@ -1,5 +1,26 @@
 [
-  {"weight": 3, "name": "Circle A", "level":1},
-  {"weight": 2, "name": "Circle B", "level":1},
-  {"weight": 1, "name": "Circle C", "level":1}
+  {
+    "weight": 3, 
+    "name": "Level 1 - A", 
+    "level":1,
+    "children": [
+      {"weight": 2, "name": "Level 2 - A1", "level":2},
+      {"weight": 1, "name": "Level 2 - A2", "level":2}
+    ]
+  },
+  {
+    "weight": 2,
+    "name": "Level 1 - B",
+    "level": 1,
+    "children": [
+      {"weight": 2, "name": "Level 2 - B1", "level": 2},
+      {"weight": 1, "name": "Level 2 - B2", "level": 2}
+    ]
+  },
+  {
+    "weight": 1,
+    "name": "Level 1 - C",
+    "level": 1
+    
+  }
 ]
