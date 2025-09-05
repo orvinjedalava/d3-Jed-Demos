@@ -1,0 +1,40 @@
+[
+  {
+    "weight": 3, 
+    "name": "Level 1 - A", 
+    "level":1,
+    "children": [
+      {"weight": 3, "name": "Level 2 - A1", "level":2},
+      {"weight": 2, "name": "Level 2 - A2", "level":2},
+      {"weight": 1, "name": "Level 2 - A3", "level":2}
+    ]
+  },
+  {
+    "weight": 2,
+    "name": "Level 1 - B",
+    "level": 1,
+    "children": [
+      {"weight": 9, "name": "Level 2 - B1", "level": 2},
+      {"weight": 8, "name": "Level 2 - B2", "level": 2},
+      {"weight": 7, "name": "Level 2 - B3", "level": 2},
+      {"weight": 6, "name": "Level 2 - B4", "level": 2},
+      {"weight": 5, "name": "Level 2 - B5", "level": 2},
+      {"weight": 4, "name": "Level 2 - B6", "level": 2},
+      {"weight": 3, "name": "Level 2 - B7", "level": 2},
+      {"weight": 2, "name": "Level 2 - B8", "level": 2},
+      {"weight": 1, "name": "Level 2 - B9", "level": 2}
+    ]
+  },
+  {
+    "weight": 1,
+    "name": "Level 1 - C",
+    "level": 1,
+    "children": [
+      {"weight": 4, "name": "Level 2 - C1", "level": 2},
+      {"weight": 3, "name": "Level 2 - C2", "level": 2},
+      {"weight": 2, "name": "Level 2 - C3", "level": 2},
+      {"weight": 1, "name": "Level 2 - C4", "level": 2}
+    ]
+    
+  }
+]
