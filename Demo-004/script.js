@@ -17,13 +17,13 @@ let activeCircle = null;
 const activeCircleStack = [];
 
 // Define data holder
-let carData = [];
+let jsonData = [];
 
 // level value map
-const levelValueFactos = new Map();
-levelValueFactos.set(1, 1000);
-levelValueFactos.set(2, 100);
-levelValueFactos.set(3, 10);
+const levelValueFactors = new Map();
+levelValueFactors.set(1, 1000);
+levelValueFactors.set(2, 100);
+levelValueFactors.set(3, 10);
 
 // At the top of your file with other globals
 let idCounter = 1;
@@ -98,12 +98,11 @@ document.addEventListener('DOMContentLoaded', function() {
 
     // Load initial data and render visualization
     d3.json('data/circles.json').then(function(data) {
-      // carData = data;
-        // carData = setCarData(data);
-        carData = data;
-        const circlesData = setCarData(carData);
         
-        updateVisualization(circlesData);
+        jsonData = data;
+        assignIds(jsonData);
+
+        updateVisualization(setCircleData(jsonData));
     });
 });
 
@@ -130,7 +129,7 @@ function getCircleCoords(paramX1, paramY1, paramX2, paramY2) {
     ]
 }
 
-function setCarData(data) {
+function setCircleData(data) {
   let transformedData = [];
 
   transformData(data, transformedData);
@@ -139,6 +138,18 @@ function setCarData(data) {
   console.log(leafToRootMap);
   
   return transformedData;
+}
+
+function assignIds(data) {
+    data.forEach(item => {
+        if (!item.id) {
+            item.id = generateId();
+        }
+
+        if (item.children) {
+            assignIds(item.children);
+        }
+    });
 }
 
 function transformData(leaves, containerData, rootId = 0, fillColorIndex = 0, x1 = 0, y1 = 0, x2 = widthScale, y2 = heightScale) {
@@ -155,7 +166,7 @@ function transformData(leaves, containerData, rootId = 0, fillColorIndex = 0, x1
     rootToLeavesMap.set(rootId, []);
 
     leaves.map((leaf, i) => {
-        leaf.id = generateId();
+        // leaf.id = generateId();
         
         // if rootId exists as key in rootToLeavesMap, add this parent id to its array
         // if (rootToLeavesMap.has(rootId)) {
@@ -166,7 +177,7 @@ function transformData(leaves, containerData, rootId = 0, fillColorIndex = 0, x1
 
         leaf.cx = circleCoords[i % circleCoords.length].cx;
         leaf.cy = circleCoords[i % circleCoords.length].cy;
-        leaf.r = leaf.weight * levelValueFactos.get(leaf.level);
+        leaf.r = leaf.weight * levelValueFactors.get(leaf.level);
         leaf.fill = fillColors[fillColorIndex % fillColors.length];
         leaf.boundingBox = circleCoords[i % circleCoords.length].boundingBox;
         
@@ -205,9 +216,9 @@ function addCar() {
             name: carName + carWeight,
             level: 1
         };
-        carData.push(newCar);
-        const circlesData = setCarData(carData);
-        updateVisualization(circlesData);
+        jsonData.push(newCar);
+        assignIds(jsonData);
+        updateVisualization(setCircleData(jsonData));
     }
 }
 
@@ -215,14 +226,14 @@ function removeCar() {
     const carIndexInput = document.getElementById('car-index');
     const carIndex = parseInt(carIndexInput.value);
 
-    if (isNaN(carIndex) || !carData[carIndex]) {
+    if (isNaN(carIndex) || !jsonData[carIndex]) {
        return;
     }
 
     // remove a car by index
-    carData.splice(carIndex, 1);
-    const circlesData = setCarData(carData);
-    updateVisualization(circlesData);
+    jsonData.splice(carIndex, 1);
+    assignIds(jsonData);
+    updateVisualization(setCircleData(jsonData));
 }
 
 
@@ -245,18 +256,19 @@ function zoomTo(circle) {
 
     // Calculate the transform needed to center and zoom on this circle
     let transform = initialTransform;
+    let activeId = 0; // default to root
 
     if (circle) {
-      const currentData = d3.select(circle).datum();
+      const circleData = d3.select(circle).datum();
       // Add selection styling to clicked circle
       d3.select(circle).classed("selected", true);
       activeCircle = circle;
 
       // Calculate the bounding box in screen space
-      const x1 = x(currentData.boundingBox.x1);
-      const y1 = y(currentData.boundingBox.y1);
-      const x2 = x(currentData.boundingBox.x2);
-      const y2 = y(currentData.boundingBox.y2);
+      const x1 = x(circleData.boundingBox.x1);
+      const y1 = y(circleData.boundingBox.y1);
+      const x2 = x(circleData.boundingBox.x2);
+      const y2 = y(circleData.boundingBox.y2);
 
       // Calculate the width and height of the bounding box in screen space
       const boxWidth = x2 - x1;
@@ -275,13 +287,17 @@ function zoomTo(circle) {
       // Calculate the transform needed to center and zoom on the bounding box
       const translateX = width / 2 - scale * boxCenterX;
       const translateY = height / 2 - scale * boxCenterY;
+
       transform = d3.zoomIdentity.translate(translateX, translateY).scale(scale);
+      activeId = circleData.id;
     }
 
     // Animate the zoom using the calculated transform
     svg.transition()
         .duration(animationDuration)
         .call(zoom.transform, transform);
+
+    refreshCirclesVisibility(activeId);
 }
 
 function zoomToSibling(circle) {
@@ -319,11 +335,45 @@ function zoomToChild(circle) {
   zoomTo(circle);
 }
 
-function isLatest(circle) {
-    return activeCircleStack.length > 0 && activeCircleStack[activeCircleStack.length - 1] === circle;
+function getLatestLeafId() {
+    
+    const circle = activeCircleStack.length > 0 ? activeCircleStack[activeCircleStack.length - 1] : null;
+
+    if (circle) {
+      const circleData = d3.select(circle).datum();
+      return circleData.id;
+    }
+
+    return 0;
+}
+
+function isVisible(leafId) {
+    return leafToRootMap.has(leafId) && leafToRootMap.get(leafId) === getLatestLeafId();
+}
+
+function refreshCirclesVisibility(rootId) {
+  // set default transition
+  const t = d3.transition().duration(animationDuration);
+
+  circlesMap.forEach((circleElement, id) => {
+      if (leafToRootMap.has(id) && leafToRootMap.get(id) === rootId) {
+          d3.select(circleElement)
+          .style('display', 'block')
+          .style('pointer-events', 'all')
+          .transition(t)
+            .style('opacity', 1);
+      } else {
+          d3.select(circleElement)
+          .style('display', 'none')
+          .style('pointer-events', 'none')
+          .transition(t)
+            .style('opacity', 0);
+      }
+  });
 }
 
 function updateScatterPlot(data) {
+    // set default transition
     const t = d3.transition().duration(animationDuration);
 
     // Create scales
@@ -338,6 +388,16 @@ function updateScatterPlot(data) {
     .each(function(d) {
         // Remove the reference from the map when a circle is removed
         circlesMap.delete(d.id);
+        // Remove from rootToLeavesMap and leafToRootMap
+        if (leafToRootMap.has(d.id)) {
+            const parentId = leafToRootMap.get(d.id);
+            const leaves = rootToLeavesMap.get(parentId);
+            const index = leaves.indexOf(d.id);
+            if (index > -1) {
+                leaves.splice(index, 1);
+            }
+        }
+        leafToRootMap.delete(d.id);
     })
     .transition(t)
       .style('opacity', 0).remove();
@@ -352,11 +412,15 @@ function updateScatterPlot(data) {
 
     // Handle new elements - append both the group and the rect to new elements only
     const enterSelection = cardGroup.enter().append('circle')
-        .style('opacity', 0)
         .attr("r", d => y(d.r))
         .attr("cx", d => x(d.cx))
         .attr("cy", d => y(d.cy))
         .attr("fill", (d, i) => d.fill)
+        .style('opacity', 0)
+        // .style('cursor', d => isVisible(d.id) ? 'pointer' : 'auto')
+        .style('cursor', 'pointer')
+        .style('display', d => isVisible(d.id) ? 'block' : 'none')
+        .style('pointer-events', d => isVisible(d.id) ? 'all' : 'none') // Disable pointer events for non-visible circles
         .on("mouseover", function() { d3.select(this).attr("stroke", "#000"); })
         .on("mouseout", function() { d3.select(this).attr("stroke", null); })
         .each(function(d) {
@@ -378,38 +442,23 @@ function updateScatterPlot(data) {
             // Zoom to clicked circle if stack is empty.
             if (!latestStackCircle) {
                 zoomToChild(this);
-                return;
+            } else {
+                const lastDataCircle = d3.select(latestStackCircle).datum();
+
+                if (d.level <= lastDataCircle.level) {
+                  zoomToParent();
+                }
+                else if (d.level === lastDataCircle.level) {
+                  zoomToSibling(this);
+                }
+                else {
+                  zoomToChild(this);
+                }
             }
 
-            const lastDataCircle = d3.select(latestStackCircle).datum();
-
-            if (d.level <= lastDataCircle.level) {
-              zoomToParent();
-            }
-            else if (d.level === lastDataCircle.level) {
-              zoomToSibling(this);
-            }
-            else {
-              zoomToChild(this);
-            }
-
-            // // Calculate the transform needed to center and zoom on this circle
-            // // NOTE: set scale to max of 8.
-            // const scale = Math.min(width, height) / (y(d.r)) * (1 - (Math.min(width, height) / Math.max(width, height)));
-            // const translateX = width / 2 - scale * x(d.cx);
-            // const translateY = height / 2 - scale * y(d.cy);
-            // const transform = d3.zoomIdentity.translate(translateX, translateY).scale(scale);
-
-            // // Animate the zoom using interpolateZoom
-            // svg.transition()
-            //     .duration(750)
-            //     .call(zoom.transform, transform);
-    
         })
         .transition(t)
-        .style('opacity', 1);
-
-    
+          .style('opacity', d => isVisible(d.id) ? 1 : 0);
 
     // Handle background click - zoom out
     background.on("click", function() {
