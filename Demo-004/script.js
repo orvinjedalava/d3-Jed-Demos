@@ -408,7 +408,7 @@ function updateScatterPlot(data) {
         .attr("r", d => y(d.r))
         .attr("cx", d => x(d.cx))
         .attr("cy", d => y(d.cy))
-        .style('opacity', 1);
+        .style('opacity', d => isVisible(d.id) ? 1 : 0);
 
     // Handle new elements - append both the group and the rect to new elements only
     const enterSelection = cardGroup.enter().append('circle')
@@ -464,10 +464,6 @@ function updateScatterPlot(data) {
     background.on("click", function() {
         zoomToParent();
     });
-    
-    // Now apply the transition
-    enterSelection.transition(t)
-        .style('opacity', 1);
 }
 
 // Function removed as car cards are now integrated into the scatter plot
