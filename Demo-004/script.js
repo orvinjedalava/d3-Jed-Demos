@@ -270,8 +270,17 @@ function removeCar() {
        return;
     }
 
-    // remove a car by index
-    jsonData.splice(carIndex, 1);
+    const currentName = getLatestLeafName();
+    const parentNode = findNodeByName(jsonData, currentName);
+    if (parentNode && parentNode.children) {
+        parentNode.children.splice(carIndex, 1);
+    }
+    else {
+        // remove a car by index
+        jsonData.splice(carIndex, 1);
+    }
+
+    
     assignIds(jsonData);
     updateVisualization(setCircleData(jsonData));
 }
